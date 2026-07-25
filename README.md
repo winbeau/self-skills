@@ -30,6 +30,7 @@ Human-facing manuals live in `docs/skills/`. License and attribution files remai
 | [`idea-review`](skills/idea-review/) | Review novelty, value, rigor, and feasibility |
 | [`idea-design-experiment`](skills/idea-design-experiment/) | Design low-cost falsifiable experiments |
 | [`idea-synthesize`](skills/idea-synthesize/) | Coordinate and summarize the idea discovery workflow |
+| [`migrate-tencent-domain-dns-to-cloudflare`](skills/migrate-tencent-domain-dns-to-cloudflare/) | Move a Tencent Cloud or DNSPod domain's authoritative DNS to Cloudflare |
 | [`notify-win`](skills/notify-win/) | Send a Windows desktop toast and sound alert |
 | [`openreview-to-html`](skills/openreview-to-html/) | Capture authenticated OpenReview discussions as self-contained HTML |
 | [`set-config`](skills/set-config/) | Apply the personal Claude Code settings baseline and diagnose configuration resets |
