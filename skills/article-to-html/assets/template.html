@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; base-uri 'none'; connect-src 'none'; font-src 'none'; frame-src 'none'; img-src data:; media-src data:; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'"
+      content="default-src 'none'; base-uri 'none'; connect-src 'none'; font-src 'none'; frame-src 'none'; img-src data:; media-src data:; object-src 'none'; script-src 'none'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'"
     />
     <title>{{DOC_TITLE}}</title>
     <style>
@@ -70,9 +70,8 @@
       </article>
     </main>
 
-    <!-- Escape all source text before insertion. Add script only when the
-         document needs a local interaction from references/interactive.md.
-         Never use innerHTML, document.write, eval, network APIs, or inline
-         event-handler attributes. -->
+    <!-- Escape all source text before insertion. Generated documents are
+         script-free; use native HTML disclosure, navigation, and selection
+         behavior instead of JavaScript. -->
   </body>
 </html>

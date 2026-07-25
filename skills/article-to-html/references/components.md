@@ -169,7 +169,7 @@ output</code></pre>
 </div>
 ```
 
-Escape `<`, `>`, and `&` from source code. Optional copy behavior is in `interactive.md` and must use a labeled button.
+Escape `<`, `>`, and `&` from source code. Generated documents are script-free, so make the block easy to select rather than adding a copy button.
 
 ## Tiny icon contract
 
@@ -186,12 +186,15 @@ Icon-only controls require `aria-label`; text plus icon is preferred. Preserve t
 
 ## Read-only input controls
 
-Generated documents are static and the CSP blocks form submission, so do not emit a `<form>` element or submit buttons. For a local table filter, use a labeled standalone input and safe JavaScript from `interactive.md`:
+Generated documents are static and script-free, and the CSP blocks form submission. Do not emit a `<form>`, submit button, or dynamic table filter. Split or group large comparisons into smaller labeled tables instead:
 
 ```html
-<label for="comparison-filter">Filter comparison</label>
-<input id="comparison-filter" type="search" autocomplete="off" />
-<p class="interactive-status" aria-live="polite"></p>
+<div class="table-wrap" role="region" aria-labelledby="comparison-caption" tabindex="0">
+  <table>
+    <caption id="comparison-caption">Comparison by deployment model</caption>
+    <!-- scoped headers and grouped rows -->
+  </table>
+</div>
 ```
 
 ## Footer

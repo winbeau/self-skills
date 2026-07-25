@@ -22,10 +22,10 @@ Both profiles are light-only. Do not add dark-mode CSS, theme toggles, or remote
 ## Workflow
 
 1. **Get the source.** Read a provided path or use the document in conversation context. Treat source raw HTML as text, not trusted markup.
-2. **Extract the skeleton.** Determine language, title, subtitle, summary, heading hierarchy, metadata actually present, figures/tables needed, and whether a local interaction materially helps.
+2. **Extract the skeleton.** Determine language, title, subtitle, summary, heading hierarchy, metadata actually present, figures/tables needed, and whether a native script-free disclosure materially helps.
 3. **Select the profile.** Follow the registry rules above.
 4. **Read the scaffold and CSS.** Read `assets/template.html`, `assets/styles/base.css`, and the selected profile CSS. Inline base CSS first and profile CSS second; generated output must not reference these files at runtime.
-5. **Read only needed guidance.** Use `references/components.md`; consult `references/svg-figures.md` for figures and `references/interactive.md` only when interaction is justified.
+5. **Read only needed guidance.** Use `references/components.md`; consult `references/svg-figures.md` for figures and `references/interactive.md` only when a native script-free disclosure or navigation pattern is justified.
 6. **Author semantic HTML.** Do not pass Markdown through a general renderer and do not preserve raw source HTML. Escape `&`, `<`, `>`, quotes where applicable, then deliberately emit allowed elements.
 7. **Validate.** Run `python3 scripts/validate_article_html.py --input OUTPUT.html`. For important deliverables also request desktop/mobile screenshots and inspect them.
 8. **Write safely.** Honor a user path. Otherwise write beside a source file or in the current directory. Use an English lowercase hyphenated slug (≤40 characters). Append `-v2`, `-v3`, etc. instead of overwriting an existing output.
@@ -33,13 +33,12 @@ Both profiles are light-only. Do not add dark-mode CSS, theme toggles, or remote
 
 ## Output and security contract
 
-- One self-contained `.html` file. Inline CSS, required SVG, embedded data images, and optional vanilla JS.
+- One self-contained `.html` file. Inline CSS, required SVG, and embedded data images; no JavaScript.
 - No CDN, remote font/image, stylesheet, script, iframe, external runtime asset, Tailwind/React runtime, or full icon package.
-- Include the restrictive CSP from `assets/template.html`. Keep `default-src`, `connect-src`, `font-src`, `frame-src`, `object-src`, and `form-action` at `'none'`; allow only inline style/script and embedded `data:` images/media needed by the document.
+- Include the restrictive CSP from `assets/template.html`. Keep `default-src`, `connect-src`, `font-src`, `frame-src`, `object-src`, `form-action`, and `script-src` at `'none'`; allow only inline style and embedded `data:` images/media needed by the document.
 - HTTP(S) links are allowed as reader navigation. Reject `javascript:`, `vbscript:`, `file:`, protocol-relative URLs, HTML-bearing data URLs, and any unsafe or unknown URL scheme.
-- Reject unsafe tags including `base`, `form`, `iframe`, `frame`, `object`, `embed`, `portal`, and active SVG/MathML constructs. Do not add inline event-handler attributes.
-- Do not use `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `Function`, or string-to-code timers.
-- Do not use network APIs such as `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, or `sendBeacon`.
+- Reject unsafe tags including `base`, `form`, `iframe`, `frame`, `object`, `embed`, `portal`, `script`, and active SVG/MathML constructs. Reject meta refresh and inline event-handler attributes.
+- Do not generate JavaScript. This deny-by-default rule also excludes DOM sinks, dynamic code, network APIs, scripted navigation, and scripts nested in SVG or MathML.
 - Keep source code/text intact through escaping; do not invent citations, data, dates, authors, captions, or metadata.
 
 ## Accessibility and responsive contract
@@ -78,9 +77,9 @@ Do not recolor the paper/ink signature unless the user explicitly requests a cus
 - `assets/icons/lucide-subset.svg` is the only bundled icon source. Copy only symbols actually used, with `.icon` using `currentColor`, `fill: none`, round caps/joins, and stroke width `1.75`. Preserve the Lucide 0.468.0 ISC comment. Never embed the full package.
 - Keep total callouts low and do not leak domain-specific content from examples.
 
-## Interactivity
+## Native disclosure and navigation
 
-Default to none. Add only a small local interaction that clearly helps (for example an accessible collapse control, copy button, table filter, or static TOC scroll state). Follow `references/interactive.md`. Do not add forms, remote-submission behavior, dark mode, figure traps, or unsafe DOM construction.
+Default to static presentation. When it materially improves reading, use only native script-free behavior such as `<details>/<summary>` or static fragment-link navigation. Follow `references/interactive.md`. Do not add JavaScript, forms, automatic redirects, remote-submission behavior, dark mode, figure traps, or dynamic filters/copy controls.
 
 ## Files
 
@@ -94,6 +93,6 @@ Default to none. Add only a small local interaction that clearly helps (for exam
 - `assets/example-paper-proposal.html` — same fixture in `paper-proposal`.
 - `references/components.md` — semantic component contracts.
 - `references/svg-figures.md` — accessible inline SVG guidance.
-- `references/interactive.md` — safe optional JS patterns.
+- `references/interactive.md` — script-free native disclosure and navigation patterns.
 - `scripts/validate_article_html.py` — registry, safety, accessibility, self-test, and screenshot validator.
 - `ATTRIBUTION.md` — XJU MIT and Lucide ISC notices.

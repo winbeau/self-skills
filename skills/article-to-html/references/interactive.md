@@ -1,141 +1,73 @@
-# Optional local interactions
+# Script-free native interactions
 
-Default to static HTML. Add an interaction only when it improves comprehension or task completion. Both profiles are light-only: do not add a theme toggle, dark-mode CSS, or `prefers-color-scheme` recommendation.
+Generated documents are static and **must not contain JavaScript**. The template CSP uses `script-src 'none'`, and the validator rejects every `<script>` element, including scripts nested in SVG or MathML. Do not add inline event-handler attributes, meta refresh, external runtimes, or code that navigates, loads resources, submits data, or changes the CSP.
 
-Generated scripts must be inline, dependency-free, and compatible with the restrictive CSP in `assets/template.html`. They must not use network APIs (`fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`), dynamic code (`eval`, `Function`), raw HTML sinks (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`), inline event-handler attributes, or externally loaded assets.
+Prefer a fully static presentation. When a small interaction materially improves reading, use native HTML behavior only. Both profiles are light-only: do not add a theme toggle, dark-mode CSS, or `prefers-color-scheme` recommendation.
 
-Use `textContent`, `classList`, `setAttribute`, `append`, and `replaceChildren` for DOM updates. Every control must be keyboard reachable, visibly focused, and labeled. Respect `prefers-reduced-motion` through the shared base CSS.
+Every control must be keyboard reachable, visibly focused, and accurately labeled. Respect `prefers-reduced-motion` through the shared base CSS.
 
 ## Collapsible section
 
-Use a real button inside the heading. Do not make the heading itself clickable.
+Use `<details>` and `<summary>`. This gives keyboard activation and state management without script. Keep a heading inside the expanded content so the document outline remains explicit.
 
 ```html
-<section class="collapsible" aria-labelledby="details-heading">
-  <h2 id="details-heading">
-    Details
-    <button class="icon-button section-toggle" type="button" aria-expanded="true" aria-controls="details-body">
-      <span>Collapse</span>
-      <svg class="icon" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
-    </button>
-  </h2>
-  <div id="details-body">…</div>
-</section>
-
-<script>
-  document.querySelectorAll(".section-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-      const panel = document.getElementById(button.getAttribute("aria-controls"));
-      if (!panel) return;
-      const expanded = button.getAttribute("aria-expanded") === "true";
-      button.setAttribute("aria-expanded", String(!expanded));
-      panel.hidden = expanded;
-      const label = button.querySelector("span");
-      if (label) label.textContent = expanded ? "Expand" : "Collapse";
-    });
-  });
-</script>
+<details class="collapsible">
+  <summary>Implementation details</summary>
+  <div class="collapsible-body">
+    <h2 id="implementation-details">Implementation details</h2>
+    <p>…</p>
+  </div>
+</details>
 ```
 
-Copy `chevron-down` from the tiny Lucide subset only if the icon is used. The visible text is the accessible label; an icon-only variant must use `aria-label`.
+Do not add a redundant custom button or manually set `aria-expanded`; the native element exposes its state.
 
-## Copy button
+## Long code or command blocks
 
-The Clipboard API is local, but may be unavailable on `file:` pages. Provide a status message and fail gracefully.
+Do not add a copy button: clipboard access requires JavaScript and is intentionally outside the generated-document contract. Make code easy to select and provide a concise instruction when useful.
 
 ```html
 <div class="code-block">
-  <button class="btn copy-button" type="button" data-copy-target="command-example">Copy</button>
+  <p class="component-label">Command · select and copy</p>
   <pre id="command-example"><code>command --flag</code></pre>
-  <p class="interactive-status" aria-live="polite"></p>
 </div>
-
-<script>
-  document.querySelectorAll(".copy-button").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const target = document.getElementById(button.dataset.copyTarget || "");
-      const status = button.parentElement?.querySelector(".interactive-status");
-      if (!target || !status) return;
-      try {
-        await navigator.clipboard.writeText(target.textContent || "");
-        status.textContent = "Copied to clipboard.";
-      } catch {
-        status.textContent = "Copy is unavailable here. Select the text manually.";
-      }
-    });
-  });
-</script>
 ```
 
-## Table filter
+## Large comparison tables
 
-Filtering is local and may hide rows. Announce the remaining row count.
+Do not add client-side filtering or sorting. Use one or more of these static alternatives:
 
-```html
-<label for="comparison-filter">Filter comparison</label>
-<input id="comparison-filter" type="search" autocomplete="off" />
-<p id="comparison-status" class="interactive-status" aria-live="polite"></p>
+- group rows under clear subheadings;
+- split a large table into smaller labeled tables;
+- provide a short summary list before the full table;
+- keep the `.table-wrap` overflow contract for narrow viewports.
 
-<script>
-  const filter = document.getElementById("comparison-filter");
-  const table = document.querySelector("table[data-filterable]");
-  const status = document.getElementById("comparison-status");
-  if (filter && table && status && table.tBodies[0]) {
-    const rows = Array.from(table.tBodies[0].rows);
-    filter.addEventListener("input", () => {
-      const query = filter.value.trim().toLocaleLowerCase();
-      let visible = 0;
-      rows.forEach((row) => {
-        const match = row.textContent?.toLocaleLowerCase().includes(query) ?? false;
-        row.hidden = !match;
-        if (match) visible += 1;
-      });
-      status.textContent = `${visible} rows shown.`;
-    });
-  }
-</script>
-```
+If the document truly requires dynamic filtering, sorting, clipboard access, live status, or scroll-state updates, it is outside this static-document Skill's output contract and should be implemented as an application instead.
 
-## Static table of contents with scroll state
+## Table of contents
 
-Prefer generating the TOC in HTML from the document skeleton. JavaScript may update `aria-current`; it must not create headings or IDs at runtime.
+Generate a static TOC from the document skeleton. Fragment links provide native navigation without script.
 
 ```html
 <nav class="toc" aria-label="On this page">
   <a href="#scope">Scope</a>
   <a href="#method">Method</a>
 </nav>
-
-<script>
-  const tocLinks = Array.from(document.querySelectorAll(".toc a[href^='#']"));
-  const sections = tocLinks
-    .map((link) => document.getElementById(link.getAttribute("href")?.slice(1) || ""))
-    .filter(Boolean);
-  if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        tocLinks.forEach((link) => {
-          const active = link.getAttribute("href") === `#${entry.target.id}`;
-          if (active) link.setAttribute("aria-current", "location");
-          else link.removeAttribute("aria-current");
-        });
-      });
-    }, { rootMargin: "-35% 0px -55%" });
-    sections.forEach((section) => observer.observe(section));
-  }
-</script>
 ```
 
-## No submission forms
+Do not synthesize runtime IDs or use scroll observers to mutate `aria-current`.
 
-Do not generate `<form>` elements. The output CSP sets `form-action 'none'`, and this Skill is for self-contained documents rather than data collection. If a document needs a local filter or control group, use labeled standalone inputs and buttons. If it needs actual submission, a backend, or external data flow, it is outside this Skill's scope.
+## No submission forms or automatic navigation
+
+Do not generate `<form>` elements, submit buttons, or `meta[http-equiv="refresh"]`. The output CSP sets `form-action 'none'`, and this Skill is for self-contained documents rather than data collection or redirects.
 
 ## Disallowed patterns
 
+- Any `<script>` element, including inside SVG or MathML.
+- Inline event-handler attributes such as `onclick` or `onload`.
+- Meta refresh or other automatic navigation.
 - Theme toggles or dark-mode variants.
-- Clickable non-interactive elements such as `<div onclick>` or headings with click handlers.
-- Figure zoom that traps the user or lacks an Escape path and focus management.
-- Sorting triggered directly by a `<th>` without a nested button and `aria-sort` updates.
-- `innerHTML` templates, even when the source appears trusted.
-- Any script that sends data, loads resources, or changes the CSP.
+- Clickable non-interactive elements.
+- Figure zoom that traps the user.
+- Dynamic filtering, sorting, copying, or TOC state implemented with JavaScript.
+- Any mechanism that sends data, loads runtime resources, or changes the CSP.

@@ -37,11 +37,10 @@ Do not use it for:
 
 The output is one `.html` file with:
 
-- inline CSS and optional inline vanilla JavaScript;
-- inline SVG and, only when necessary, embedded `data:` images;
-- no CDN, remote font/image, external runtime asset, Tailwind/React runtime, or full icon package;
-- a restrictive Content Security Policy;
-- escaped source raw HTML and rejected unsafe tags (including forms), URL schemes, event attributes, DOM sinks, and network APIs;
+- inline CSS, inline SVG, and, only when necessary, embedded `data:` images;
+- no JavaScript, CDN, remote font/image, external runtime asset, Tailwind/React runtime, or full icon package;
+- a restrictive Content Security Policy with `script-src 'none'`;
+- escaped source raw HTML and rejected scripts, meta refresh, unsafe tags (including forms), URL schemes, event attributes, DOM sinks, and network APIs;
 - a declared language, exactly one H1, valid heading order, unique IDs, a skip link, keyboard focus, reduced-motion behavior, and narrow-viewport handling;
 - image alt text, labeled/scoped tables, informative SVG titles/descriptions, and labeled controls.
 
