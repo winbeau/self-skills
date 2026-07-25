@@ -1,329 +1,141 @@
-# Interactive Snippets
+# Optional local interactions
 
-Append these `<script>` blocks just before `</body>`. Every snippet is plain vanilla JS — no external library.
+Default to static HTML. Add an interaction only when it improves comprehension or task completion. Both profiles are light-only: do not add a theme toggle, dark-mode CSS, or `prefers-color-scheme` recommendation.
 
-> Default to no interactivity. Only add it when the doc is long (≥3 sections) or is itself interaction-shaped (tutorial / decision / vendor selection).
+Generated scripts must be inline, dependency-free, and compatible with the restrictive CSP in `assets/template.html`. They must not use network APIs (`fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`), dynamic code (`eval`, `Function`), raw HTML sinks (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`), inline event-handler attributes, or externally loaded assets.
 
----
+Use `textContent`, `classList`, `setAttribute`, `append`, and `replaceChildren` for DOM updates. Every control must be keyboard reachable, visibly focused, and labeled. Respect `prefers-reduced-motion` through the shared base CSS.
 
-## 1) Section collapse
+## Collapsible section
 
-Make every `<section>`'s `<h2>` clickable to collapse the section body.
+Use a real button inside the heading. Do not make the heading itself clickable.
 
-**HTML change:** add `class="collapsible"` to the `section`.
-
-**CSS** (append to the existing `<style>`):
-```css
-section.collapsible h2 { cursor: pointer; position: relative; padding-right: 28px; }
-section.collapsible h2::after {
-  content: "−";
-  position: absolute; right: 8px; top: 0;
-  font-family: ui-monospace, Menlo, monospace;
-  color: var(--ink-faint);
-}
-section.collapsible.collapsed h2::after { content: "+"; }
-section.collapsible.collapsed > *:not(h2) { display: none; }
-```
-
-**JS:**
 ```html
+<section class="collapsible" aria-labelledby="details-heading">
+  <h2 id="details-heading">
+    Details
+    <button class="icon-button section-toggle" type="button" aria-expanded="true" aria-controls="details-body">
+      <span>Collapse</span>
+      <svg class="icon" aria-hidden="true"><use href="#icon-chevron-down"></use></svg>
+    </button>
+  </h2>
+  <div id="details-body">…</div>
+</section>
+
 <script>
-  document.querySelectorAll("section.collapsible h2").forEach(h => {
-    h.addEventListener("click", () => h.parentElement.classList.toggle("collapsed"));
+  document.querySelectorAll(".section-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      if (!panel) return;
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!expanded));
+      panel.hidden = expanded;
+      const label = button.querySelector("span");
+      if (label) label.textContent = expanded ? "Expand" : "Collapse";
+    });
   });
 </script>
 ```
 
----
+Copy `chevron-down` from the tiny Lucide subset only if the icon is used. The visible text is the accessible label; an icon-only variant must use `aria-label`.
 
-## 2) Copy button on code blocks
+## Copy button
 
-```css
-pre { position: relative; }
-.copy-btn {
-  position: absolute; top: 8px; right: 8px;
-  font-family: ui-monospace, Menlo, monospace; font-size: 10px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: #fff; border: 1px solid var(--rule);
-  padding: 4px 8px; cursor: pointer; color: var(--ink-faint);
-}
-.copy-btn:hover { color: var(--ink); }
-```
+The Clipboard API is local, but may be unavailable on `file:` pages. Provide a status message and fail gracefully.
 
 ```html
+<div class="code-block">
+  <button class="btn copy-button" type="button" data-copy-target="command-example">Copy</button>
+  <pre id="command-example"><code>command --flag</code></pre>
+  <p class="interactive-status" aria-live="polite"></p>
+</div>
+
 <script>
-  document.querySelectorAll("pre").forEach(pre => {
-    const btn = document.createElement("button");
-    btn.className = "copy-btn";
-    btn.textContent = "copy";
-    btn.onclick = async () => {
-      await navigator.clipboard.writeText(pre.innerText);
-      btn.textContent = "copied";
-      setTimeout(() => (btn.textContent = "copy"), 1500);
-    };
-    pre.appendChild(btn);
+  document.querySelectorAll(".copy-button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const target = document.getElementById(button.dataset.copyTarget || "");
+      const status = button.parentElement?.querySelector(".interactive-status");
+      if (!target || !status) return;
+      try {
+        await navigator.clipboard.writeText(target.textContent || "");
+        status.textContent = "Copied to clipboard.";
+      } catch {
+        status.textContent = "Copy is unavailable here. Select the text manually.";
+      }
+    });
   });
 </script>
 ```
 
----
+## Table filter
 
-## 3) Table filter + sort
-
-Give the table an id: `<table id="vendors">`.
+Filtering is local and may hide rows. Announce the remaining row count.
 
 ```html
-<input type="text" id="vendors-filter" placeholder="filter…" style="max-width: 220px; margin-bottom: 12px;" />
-<script>
-  (function () {
-    const t = document.getElementById("vendors");
-    const input = document.getElementById("vendors-filter");
-    if (!t || !input) return;
-    const rows = [...t.tBodies[0].rows];
+<label for="comparison-filter">Filter comparison</label>
+<input id="comparison-filter" type="search" autocomplete="off" />
+<p id="comparison-status" class="interactive-status" aria-live="polite"></p>
 
-    input.addEventListener("input", e => {
-      const q = e.target.value.toLowerCase();
-      rows.forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+<script>
+  const filter = document.getElementById("comparison-filter");
+  const table = document.querySelector("table[data-filterable]");
+  const status = document.getElementById("comparison-status");
+  if (filter && table && status && table.tBodies[0]) {
+    const rows = Array.from(table.tBodies[0].rows);
+    filter.addEventListener("input", () => {
+      const query = filter.value.trim().toLocaleLowerCase();
+      let visible = 0;
+      rows.forEach((row) => {
+        const match = row.textContent?.toLocaleLowerCase().includes(query) ?? false;
+        row.hidden = !match;
+        if (match) visible += 1;
       });
+      status.textContent = `${visible} rows shown.`;
     });
+  }
+</script>
+```
 
-    // sortable headers
-    t.tHead.querySelectorAll("th").forEach((th, i) => {
-      th.style.cursor = "pointer";
-      let asc = true;
-      th.addEventListener("click", () => {
-        rows.sort((a, b) => {
-          const av = a.cells[i].innerText.trim();
-          const bv = b.cells[i].innerText.trim();
-          const an = parseFloat(av), bn = parseFloat(bv);
-          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
-          return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+## Static table of contents with scroll state
+
+Prefer generating the TOC in HTML from the document skeleton. JavaScript may update `aria-current`; it must not create headings or IDs at runtime.
+
+```html
+<nav class="toc" aria-label="On this page">
+  <a href="#scope">Scope</a>
+  <a href="#method">Method</a>
+</nav>
+
+<script>
+  const tocLinks = Array.from(document.querySelectorAll(".toc a[href^='#']"));
+  const sections = tocLinks
+    .map((link) => document.getElementById(link.getAttribute("href")?.slice(1) || ""))
+    .filter(Boolean);
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        tocLinks.forEach((link) => {
+          const active = link.getAttribute("href") === `#${entry.target.id}`;
+          if (active) link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
         });
-        asc = !asc;
-        const tbody = t.tBodies[0];
-        rows.forEach(r => tbody.appendChild(r));
       });
-    });
-  })();
+    }, { rootMargin: "-35% 0px -55%" });
+    sections.forEach((section) => observer.observe(section));
+  }
 </script>
 ```
 
----
+## No submission forms
 
-## 4) TOC + scrollspy
+Do not generate `<form>` elements. The output CSP sets `form-action 'none'`, and this Skill is for self-contained documents rather than data collection. If a document needs a local filter or control group, use labeled standalone inputs and buttons. If it needs actual submission, a backend, or external data flow, it is outside this Skill's scope.
 
-Fixed left-side table of contents, auto-highlights the current section.
+## Disallowed patterns
 
-**CSS:**
-```css
-.toc {
-  position: fixed; top: 64px; left: 24px;
-  width: 200px;
-  font-family: ui-monospace, Menlo, monospace;
-  font-size: 11px; line-height: 1.8;
-}
-.toc a { display: block; color: var(--ink-faint); border: none; }
-.toc a.active { color: var(--accent); font-weight: 600; }
-@media (max-width: 1180px) { .toc { display: none; } }
-```
-
-**HTML** (right after `<body>`):
-```html
-<nav class="toc" id="toc"></nav>
-```
-
-**JS:**
-```html
-<script>
-  (function () {
-    const toc = document.getElementById("toc");
-    if (!toc) return;
-    const sections = [...document.querySelectorAll("section > h2")];
-    sections.forEach((h, i) => {
-      const id = h.id || `sec-${i + 1}`;
-      h.id = id;
-      const a = document.createElement("a");
-      a.href = `#${id}`;
-      a.textContent = h.textContent.replace(/^\s*\d+\s*/, "");
-      toc.appendChild(a);
-    });
-    const links = [...toc.querySelectorAll("a")];
-    const obs = new IntersectionObserver(
-      entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === `#${e.target.id}`));
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -50% 0px" }
-    );
-    sections.forEach(s => obs.observe(s));
-  })();
-</script>
-```
-
----
-
-## 5) Dark mode toggle (persisted)
-
-**CSS** (append to the existing `<style>`):
-```css
-html.dark {
-  --paper: #1a1a1a;
-  --paper-edge: #222;
-  --ink: #e8e8e2;
-  --ink-soft: #b8b8b2;
-  --ink-faint: #888;
-  --rule: #333;
-  --rule-soft: #2a2a2a;
-  --code-bg: #262624;
-  --accent-faint: #1c2a35;
-  --warn-soft: #2c2418;
-}
-html.dark .callout, html.dark .card, html.dark figure { background: #1f1f1f; }
-html.dark figcaption { background: #181818; }
-
-.theme-toggle {
-  position: fixed; top: 16px; right: 16px;
-  font-family: ui-monospace, Menlo, monospace; font-size: 10px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  background: var(--paper-edge); color: var(--ink-faint);
-  border: 1px solid var(--rule);
-  padding: 6px 10px; cursor: pointer; z-index: 10;
-}
-```
-
-**HTML:**
-```html
-<button class="theme-toggle" id="theme-toggle">dark</button>
-```
-
-**JS:**
-```html
-<script>
-  (function () {
-    const btn = document.getElementById("theme-toggle");
-    const apply = mode => {
-      document.documentElement.classList.toggle("dark", mode === "dark");
-      btn.textContent = mode === "dark" ? "light" : "dark";
-    };
-    apply(localStorage.getItem("theme") || "light");
-    btn.addEventListener("click", () => {
-      const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
-      localStorage.setItem("theme", next);
-      apply(next);
-    });
-  })();
-</script>
-```
-
----
-
-## 6) Decision form → localStorage
-
-Lets readers leave "approve/reject + comment" entries at the bottom of the doc, persisted locally (no network).
-
-HTML is in the "Form" section of `components.md`.
-
-```html
-<div id="feedback-output" style="margin-top: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-faint);"></div>
-
-<script>
-  (function () {
-    const form = document.getElementById("feedback");
-    const out = document.getElementById("feedback-output");
-    if (!form) return;
-    const KEY = "feedback-" + location.pathname;
-
-    const render = () => {
-      const all = JSON.parse(localStorage.getItem(KEY) || "[]");
-      if (!all.length) { out.textContent = ""; return; }
-      out.innerHTML = "<strong>local responses:</strong><br/>" +
-        all.map(r => `· ${r.reviewer} → ${r.vote}${r.comment ? " · " + r.comment : ""}`).join("<br/>");
-    };
-    render();
-
-    form.addEventListener("submit", e => {
-      e.preventDefault();
-      const entry = {
-        reviewer: form.reviewer.value.trim(),
-        vote: form.vote.value,
-        comment: form.comment.value.trim(),
-        at: new Date().toISOString()
-      };
-      const all = JSON.parse(localStorage.getItem(KEY) || "[]");
-      all.push(entry);
-      localStorage.setItem(KEY, JSON.stringify(all));
-      form.reset();
-      render();
-    });
-  })();
-</script>
-```
-
----
-
-## 7) Reading-progress bar
-
-```css
-.reading-progress {
-  position: fixed; top: 0; left: 0;
-  height: 2px; background: var(--accent);
-  width: 0%; z-index: 10;
-  transition: width 0.1s ease-out;
-}
-```
-
-```html
-<div class="reading-progress" id="progress"></div>
-<script>
-  const p = document.getElementById("progress");
-  window.addEventListener("scroll", () => {
-    const h = document.documentElement.scrollHeight - innerHeight;
-    p.style.width = (scrollY / h) * 100 + "%";
-  });
-</script>
-```
-
----
-
-## 8) Click-to-zoom figures
-
-```css
-figure.zoomable { cursor: zoom-in; }
-figure.zoomable.zoomed {
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(0,0,0,0.85); cursor: zoom-out;
-  padding: 40px; margin: 0; border: none;
-  display: flex; align-items: center; justify-content: center;
-}
-figure.zoomable.zoomed svg, figure.zoomable.zoomed img {
-  max-width: 95vw; max-height: 90vh; width: auto;
-}
-figure.zoomable.zoomed figcaption { display: none; }
-```
-
-```html
-<script>
-  document.querySelectorAll("figure").forEach(fig => {
-    fig.classList.add("zoomable");
-    fig.addEventListener("click", () => fig.classList.toggle("zoomed"));
-  });
-</script>
-```
-
----
-
-## Recommended combos
-
-| Doc type | Suggested mix |
-|---|---|
-| Short / TL;DR only | No interactivity |
-| Proposal / RFC | Collapse + form + dark mode |
-| Vendor / comparison | Table filter & sort + collapse |
-| Tutorial / how-to | Code copy + TOC + reading progress |
-| Long-form / report | TOC + dark mode + figure zoom |
-
-Before adding any interaction, ask: **does it actually help comprehension?** If not, skip it.
+- Theme toggles or dark-mode variants.
+- Clickable non-interactive elements such as `<div onclick>` or headings with click handlers.
+- Figure zoom that traps the user or lacks an Escape path and focus management.
+- Sorting triggered directly by a `<th>` without a nested button and `aria-sort` updates.
+- `innerHTML` templates, even when the source appears trusted.
+- Any script that sends data, loads resources, or changes the CSP.

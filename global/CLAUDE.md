@@ -9,25 +9,30 @@
 - **该用 workflow**：开放式调研、方案设计与多方案对比、跨多个子系统的理解梳理、需要对抗式核实的关键判断、大范围审计 / 迁移 / 综述。这类任务的共同点是「解空间宽、需要发散再收敛」。
 - **不该用 workflow**：改一行代码、查一个已知文件或值、格式转换、单步执行、对话式回答、明确单文件的机械改动。直接上手更快更省。
 - 拿不准时：先自己 scout 一下（列文件、定位范围），发现确实是「发散—整合」型再起 workflow；否则直接做。
-- **起了 workflow 也照旧守下面的模型分档与 token 规则**（haiku 初筛 / pipeline 优先 / schema 最小 / finder 限量 / budget 守门）——选择性编排是为了「该重则重、该轻则轻」，不是放开烧 token。
+- **起了 workflow 也照旧守下面的路由与 token 规则**（默认继承父模型 / pipeline 优先 / schema 最小 / finder 限量 / budget 守门）——选择性编排是为了「该重则重、该轻则轻」，不是放开烧 token。
 
-## Workflow 模型选择与 Token 控制
+## Workflow 模型路由与 Token 控制
 
-> **背景**：Workflow 子 agent 默认继承父 session 模型，但可以 `{model: "haiku"|"sonnet"|"opus"}` 逐 agent 覆盖。**Opus 计费约 Sonnet 5×、Haiku 30×，滥用会清空周额度。**
+> **cc-switch 兼容原则**：`haiku` / `sonnet` / `opus` 是 Claude Code 的逻辑路由槽位，不代表固定厂商、固定模型版本或固定价格。实际模型由当前 cc-switch Provider 映射决定，切换 Provider 后可能变化。
+>
+> **默认继承父 session 模型，不显式写 `model`。** 只有用户明确指定模型档位，或某个独立子任务确实需要不同的速度/质量档位时，才给 `agent()` 写 `model: "haiku" | "sonnet" | "opus"`。不要在 Workflow 脚本中写具体版本 ID，也不要假定 `fable` 可用；先确认当前 Provider 已配置相应路由。
 
-### 三档模型分配
+### 路由选择建议
 
-| 任务类型 | 模型 | 典型例子 |
-|---|---|---|
-| 检索 / 提取 / 分类 / 格式转换 / 简单总结 | `haiku` | 文件列出、字段抽取、grep 结果整理、标题/年份提取 |
-| 推理摘要 / 草稿生成 / 文档综合 / 中等分析 | `sonnet`（默认） | 方向调研、related-work 摘要、方法草稿、reviewer 模拟 |
-| 多步推理 / 代码生成 / 对抗式核实 / 关键判断 | `opus` | 代码实现与 debug、scoop check、linchpin 实验设计、最终综合 |
+| 场景 | 路由策略 |
+|---|---|
+| 默认任务、代码实现、关键判断 | 省略 `model`，继承当前会话 |
+| 大批量机械检索 / 提取 / 分类 | 仅在确认该槽位可用时使用 `haiku` |
+| 明确希望使用平衡档 | 仅在确认该槽位可用时使用 `sonnet` |
+| 明确需要最高质量档 | 使用 `opus`，或直接继承已选择的高质量主会话 |
+
+切换 cc-switch Provider 后，不能继续沿用上一 Provider 的成本比例、能力排序或可用性判断。若某个显式槽位报 unavailable，立即改回继承父模型，不要重复调用同一失败槽位。
 
 ### Token 节省规则
 
 1. **`pipeline()` 优先**：无阻塞，wall-clock = 最慢单链；`parallel()` 是 barrier，只在真正需要全量结果时用。
-2. **两段式流水线**：haiku 做 finder/extractor 初筛 → 候选再送 sonnet/opus 深分析，比全量 opus 省 ~80%。
-3. **`schema` 最小化**：每个 `agent()` 指定 schema，字段只留下游需要的，避免 free-text 膨胀。
+2. **两段式流水线**：需要分档且槽位已验证可用时，可用较轻路由做 finder/extractor 初筛，再把候选送到继承模型或更高质量路由；不要为了省 token 强制调用一个不可用槽位。
+3. **`schema` 最小化**：需要结构化下游输入时，为 `agent()` 指定最小 schema，字段只留下游需要的，避免 free-text 膨胀。
 4. **数量上限**：finder agent ≤ 8（通常 4–6）；verifier ≤ 3 票（majority-vote 足够）。
 5. **`budget` 守门**：长循环必须有 `budget.total && budget.remaining() > N` 守卫。
 6. **截断必须 `log()`**：top-N 抽样或限量 finder，必须 log 说明，不能让结果看起来像全覆盖。
@@ -35,8 +40,13 @@
 
 ### 写脚本检查清单
 
-- [ ] 每个 `agent()` 都显式标注 `model`，或明确知道继承 sonnet 合适？
+- [ ] `model` 是否可以省略并继承父 session？只有确有分档需求且路由已验证可用时才显式填写。
+- [ ] 是否避免写死具体模型版本、供应商模型名或固定价格比例？
 - [ ] 有无不必要的 `parallel()`（能改 `pipeline()` 的改掉）？
 - [ ] schema 字段数最小化？
 - [ ] finder/verifier 数量有上限，或循环有 `budget` 守门？
 - [ ] 脚本写好后先展示给用户确认，再 launch `Workflow()`？
+
+## 静态文章 / 文档 HTML 路由
+
+当用户要把通用文章、报告、提案、RFC、教程或其他文稿生成**单个自包含的静态 HTML 文件**时，使用 `article-to-html`，默认样式为 `xju-notion`；用户显式指定样式时以用户选择为准。不要把这条路由用于多页网站或应用、React / UI 原型、幻灯片、PDF / LaTeX，或 OpenReview 导出（后者使用 `openreview-to-html`）。

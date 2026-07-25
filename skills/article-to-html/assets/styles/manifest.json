@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "default_style": "xju-notion",
+  "aliases": {
+    "paper": "paper-proposal",
+    "proposal": "paper-proposal"
+  },
+  "styles": {
+    "xju-notion": {
+      "label": "XJU Notion",
+      "description": "Warm-neutral, light-only 720px serif document profile adapted from the pinned xju-feiyue prose system.",
+      "css": [
+        "base.css",
+        "xju-notion.css"
+      ],
+      "example": "../example.html"
+    },
+    "paper-proposal": {
+      "label": "Paper Proposal",
+      "description": "Original paper palette with monospace metadata, TL;DR, numbered H2 headings, FIG labels, cards, callouts, tables, and footer.",
+      "css": [
+        "base.css",
+        "paper-proposal.css"
+      ],
+      "example": "../example-paper-proposal.html"
+    }
+  }
+}

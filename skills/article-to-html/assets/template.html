@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}" data-article-style="{{STYLE_NAME}}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; base-uri 'none'; connect-src 'none'; font-src 'none'; frame-src 'none'; img-src data:; media-src data:; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'none'"
+    />
+    <title>{{DOC_TITLE}}</title>
+    <style>
+/* Inline assets/styles/base.css, then the selected profile CSS from
+   assets/styles/manifest.json. Keep required attribution comments. */
+{{STYLE_CSS}}
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <main id="main-content">
+      <article class="doc">
+        <header class="doc-header">
+          <div class="doc-eyebrow"><span class="mascot" aria-hidden="true"></span>{{EYEBROW}}</div>
+          <h1 class="doc-title">{{DOC_TITLE}}</h1>
+          <p class="doc-subtitle">{{DOC_SUBTITLE}}</p>
+          <div class="doc-meta" aria-label="Document metadata">
+            <span>STATUS · {{STATUS}}</span>
+            <span>DATE · {{DATE}}</span>
+            <span>AUTHOR · {{AUTHOR}}</span>
+          </div>
+        </header>
+
+        <aside class="tldr" aria-labelledby="tldr-label">
+          <div class="tldr-label" id="tldr-label">TL;DR</div>
+          <p>{{TLDR_BODY}}</p>
+        </aside>
+
+        <section aria-labelledby="section-1">
+          <h2 id="section-1">{{SECTION_1_TITLE}}</h2>
+          <p>{{SECTION_1_BODY}}</p>
+        </section>
+
+        <!-- Optional figure contract:
+        <figure>
+          <svg viewBox="0 0 760 360" role="img" aria-labelledby="figure-1-title figure-1-desc">
+            <title id="figure-1-title">{{FIGURE_1_TITLE}}</title>
+            <desc id="figure-1-desc">{{FIGURE_1_DESCRIPTION}}</desc>
+          </svg>
+          <figcaption><span class="fig-num">Figure 1.</span>{{FIGURE_1_CAPTION}}</figcaption>
+        </figure>
+        -->
+
+        <!-- Optional table contract: wrap for narrow viewports and label it.
+        <div class="table-wrap" role="region" aria-labelledby="table-1-caption" tabindex="0">
+          <table>
+            <caption id="table-1-caption">{{TABLE_1_CAPTION}}</caption>
+            <thead><tr><th scope="col">{{COLUMN}}</th></tr></thead>
+            <tbody><tr><th scope="row">{{ROW}}</th></tr></tbody>
+          </table>
+        </div>
+        -->
+
+        <footer class="doc-footer">
+          <h2>References</h2>
+          <ul>
+            <li>{{REFERENCE_1}}</li>
+          </ul>
+        </footer>
+      </article>
+    </main>
+
+    <!-- Escape all source text before insertion. Add script only when the
+         document needs a local interaction from references/interactive.md.
+         Never use innerHTML, document.write, eval, network APIs, or inline
+         event-handler attributes. -->
+  </body>
+</html>

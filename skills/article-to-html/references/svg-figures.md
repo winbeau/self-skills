@@ -1,230 +1,119 @@
-# Inline SVG Figures — five typical skeletons
+# Inline SVG figures
 
-Every SVG sits inside a `<figure>`, has a `<figcaption>`, and references no external assets. Hex palette in `components.md`.
+Figures are content, not style. Use inline SVG only when a diagram materially improves comprehension. Prefer semantic HTML for tables and lists. Do not fetch images, icon packages, fonts, or scripts.
 
-Font is consistent across all figures:
-```
-font-family="ui-monospace, Menlo, monospace" font-size="12"
-```
-
----
-
-## 1) Architecture · nodes + arrows (left → right)
-
-Good for: service topology, module dependency, data flow.
+## Required contract
 
 ```html
 <figure>
-  <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg"
-       font-family="ui-monospace, Menlo, monospace" font-size="12">
-    <rect width="760" height="360" fill="#fff"/>
+  <svg viewBox="0 0 760 360" role="img" aria-labelledby="flow-title flow-desc">
+    <title id="flow-title">Request flow</title>
+    <desc id="flow-desc">Requests move from the browser through an API service to durable storage; tool execution happens in an isolated worker.</desc>
+    <!-- marks -->
+  </svg>
+  <figcaption><span class="fig-num">Figure 1.</span>Request flow and isolation boundary.</figcaption>
+</figure>
+```
 
-    <!-- node A -->
-    <g>
-      <rect x="60" y="140" width="160" height="80" fill="#eef4f8" stroke="#6f9bb8" stroke-width="1.4"/>
-      <text x="70" y="160" fill="#6f9bb8" font-weight="600" letter-spacing="0.1em" font-size="11">NODE A</text>
-      <text x="70" y="180" fill="#7a7a7a" font-size="10.5" font-style="italic">→ Description</text>
-      <text x="70" y="200" fill="#4a4a4a">One line of content</text>
-    </g>
+Rules:
 
-    <!-- node B -->
-    <g>
-      <rect x="300" y="140" width="160" height="80" fill="#fff" stroke="#6f9bb8" stroke-width="1.4"/>
-      <text x="310" y="160" fill="#6f9bb8" font-weight="600" letter-spacing="0.1em" font-size="11">NODE B</text>
-      <text x="310" y="200" fill="#4a4a4a">One line of content</text>
-    </g>
+- Give each meaningful SVG a unique `<title>` and `<desc>` pair. The description should state the relationship or conclusion a sighted reader gets from the figure.
+- Use `role="img"` plus `aria-labelledby`. Decorative SVG uses `aria-hidden="true"` instead.
+- Keep text as SVG `<text>` where practical. Do not use `<foreignObject>` or raw HTML.
+- Never include `<script>`, external `<image href>`, event attributes, animation tags, or links inside SVG.
+- Avoid color-only meaning. Pair color with labels, shapes, line styles, or direct annotations.
+- Keep contrast readable, labels large enough, and the viewBox responsive. At a 500 px viewport the entire figure should fit without horizontal page overflow.
+- Use no more than five distinct semantic colors per figure.
 
-    <!-- node C -->
-    <g>
-      <rect x="540" y="140" width="160" height="80" fill="#f5ecdc" stroke="#b88a4a" stroke-width="1.4"/>
-      <text x="550" y="160" fill="#7a6420" font-weight="600" letter-spacing="0.1em" font-size="11">NODE C</text>
-      <text x="550" y="200" fill="#4a4a4a">One line of content</text>
-    </g>
+## Profile palettes
 
-    <!-- arrows -->
+### xju-notion
+
+- Background: `#ffffff`
+- Subtle surface: `#f7f6f3`
+- Text: `#37352f`
+- Muted text: `#787774`
+- Border: `#edece9`
+- Strong border: `#dcdad4`
+- Link blue: `#2383e2`
+- Accent teal: `#0f7b6c`
+- Warning orange: `#d9730d`
+
+### paper-proposal
+
+- Background: `#ffffff`
+- Paper: `#f7f7f5`
+- Ink: `#1a1a1a`
+- Soft ink: `#4a4a4a`
+- Faint ink: `#7a7a7a`
+- Rule: `#d8d8d2`
+- Blue: `#6f9bb8`
+- Amber: `#b88a4a`
+- Olive: `#6b7560`
+
+SVG presentation attributes may use CSS variables, but literal hex values make copied figures more portable. Keep the palette consistent with the selected profile.
+
+## Architecture skeleton
+
+```html
+<figure>
+  <svg viewBox="0 0 760 300" role="img" aria-labelledby="architecture-title architecture-desc">
+    <title id="architecture-title">Three-stage architecture</title>
+    <desc id="architecture-desc">Input is normalized by the API, processed by an isolated worker, and written to durable storage.</desc>
+    <rect width="760" height="300" fill="#ffffff" />
     <defs>
-      <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5"
-              markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6f9bb8"/>
+      <marker id="architecture-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 0 10 5 0 10z" fill="#0f7b6c" />
       </marker>
     </defs>
-    <g fill="none" stroke="#6f9bb8" stroke-width="1.4">
-      <path d="M 220 180 L 298 180" marker-end="url(#arr)"/>
-      <path d="M 460 180 L 538 180" marker-end="url(#arr)"/>
+    <g fill="none" stroke="#0f7b6c" stroke-width="1.5" marker-end="url(#architecture-arrow)">
+      <path d="M220 150H300" />
+      <path d="M460 150H540" />
     </g>
-
-    <text x="259" y="170" fill="#7a7a7a" font-size="10" text-anchor="middle">request</text>
-    <text x="499" y="170" fill="#7a7a7a" font-size="10" text-anchor="middle">tool call</text>
+    <g font-family="ui-monospace, Menlo, monospace" font-size="13" text-anchor="middle">
+      <rect x="60" y="105" width="160" height="90" rx="8" fill="#f7f6f3" stroke="#dcdad4" />
+      <text x="140" y="145" fill="#37352f">INPUT</text>
+      <text x="140" y="166" fill="#787774" font-size="11">normalize</text>
+      <rect x="300" y="105" width="160" height="90" rx="8" fill="#ffffff" stroke="#0f7b6c" />
+      <text x="380" y="145" fill="#37352f">WORKER</text>
+      <text x="380" y="166" fill="#787774" font-size="11">isolated execution</text>
+      <rect x="540" y="105" width="160" height="90" rx="8" fill="#f7f6f3" stroke="#dcdad4" />
+      <text x="620" y="145" fill="#37352f">STORAGE</text>
+      <text x="620" y="166" fill="#787774" font-size="11">durable state</text>
+    </g>
   </svg>
-  <figcaption><span class="fig-num">FIG 1</span>Architecture diagram</figcaption>
+  <figcaption><span class="fig-num">Figure 1.</span>Three-stage architecture.</figcaption>
 </figure>
 ```
 
----
-
-## 2) Timing comparison · two parallel timelines
-
-Good for: before/after migration, old vs new flow, A/B comparison.
+## Timeline skeleton
 
 ```html
 <figure>
-  <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg"
-       font-family="ui-monospace, Menlo, monospace" font-size="11">
-    <rect width="760" height="320" fill="#fff"/>
-
-    <!-- time axis -->
-    <line x1="180" y1="280" x2="720" y2="280" stroke="#7a7a7a"/>
-    <g fill="#7a7a7a" font-size="10">
-      <text x="180" y="300" text-anchor="middle">0s</text>
-      <text x="396" y="300" text-anchor="middle">60s</text>
-      <text x="612" y="300" text-anchor="middle">120s</text>
-      <text x="720" y="300" text-anchor="middle">3min</text>
+  <svg viewBox="0 0 760 260" role="img" aria-labelledby="timeline-title timeline-desc">
+    <title id="timeline-title">Old and new request timing</title>
+    <desc id="timeline-desc">The old path waits for infrastructure before useful work begins; the new path overlaps setup with interactive work.</desc>
+    <rect width="760" height="260" fill="#ffffff" />
+    <line x1="170" y1="220" x2="710" y2="220" stroke="#787774" />
+    <g font-family="ui-monospace, Menlo, monospace" font-size="12">
+      <text x="150" y="90" text-anchor="end" fill="#d9730d">OLD</text>
+      <rect x="170" y="72" width="260" height="28" rx="6" fill="rgba(217,115,13,0.1)" stroke="#d9730d" />
+      <text x="300" y="91" text-anchor="middle" fill="#37352f">blocking setup</text>
+      <text x="150" y="170" text-anchor="end" fill="#0f7b6c">NEW</text>
+      <rect x="170" y="152" width="100" height="28" rx="6" fill="rgba(15,123,108,0.1)" stroke="#0f7b6c" />
+      <text x="220" y="171" text-anchor="middle" fill="#37352f">start</text>
+      <rect x="270" y="152" width="260" height="28" rx="6" fill="rgba(15,123,108,0.1)" stroke="#0f7b6c" />
+      <text x="400" y="171" text-anchor="middle" fill="#37352f">interactive work</text>
     </g>
-    <g stroke="#e8e8e2" stroke-width="1" stroke-dasharray="2 4">
-      <line x1="396" y1="60" x2="396" y2="280"/>
-      <line x1="612" y1="60" x2="612" y2="280"/>
-    </g>
-
-    <!-- row A -->
-    <text x="160" y="100" text-anchor="end" fill="#7a6420" font-weight="600" font-size="11">Old</text>
-    <rect x="180" y="88" width="50" height="22" fill="#f0ede5" stroke="#c0baa0"/>
-    <text x="205" y="103" text-anchor="middle" fill="#4a4a4a">step 1</text>
-    <rect x="230" y="88" width="180" height="22" fill="#ecdfb8" stroke="#b88a4a"/>
-    <text x="320" y="103" text-anchor="middle" fill="#7a6420">blocking wait</text>
-
-    <!-- row B -->
-    <text x="160" y="200" text-anchor="end" fill="#6f9bb8" font-weight="600" font-size="11">New</text>
-    <rect x="180" y="188" width="50" height="22" fill="#eef4f8" stroke="#a5c0d8"/>
-    <text x="205" y="203" text-anchor="middle" fill="#4a4a4a">step 1</text>
-    <rect x="230" y="188" width="180" height="22" fill="#eef4f8" stroke="#a5c0d8"/>
-    <text x="320" y="203" text-anchor="middle" fill="#4a4a4a">parallel</text>
   </svg>
-  <figcaption><span class="fig-num">FIG 2</span>Timing comparison</figcaption>
+  <figcaption><span class="fig-num">Figure 2.</span>Setup leaves the critical path.</figcaption>
 </figure>
 ```
 
----
+## Quantitative figures
 
-## 3) Bar comparison chart
+Before drawing a bar chart, timeline with values, or any quantitative graphic, verify every number from the source. Label units, baselines, and uncertainty. Use a semantic table instead when exact comparison matters more than shape. Do not infer missing values.
 
-Good for: cost comparison, performance comparison, multi-candidate scoring.
+## Tiny Lucide subset
 
-```html
-<figure>
-  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg"
-       font-family="ui-monospace, Menlo, monospace" font-size="11">
-    <rect width="760" height="280" fill="#fff"/>
-
-    <!-- axes -->
-    <line x1="180" y1="240" x2="700" y2="240" stroke="#7a7a7a"/>
-    <line x1="180" y1="40" x2="180" y2="240" stroke="#7a7a7a"/>
-    <g fill="#7a7a7a" font-size="10" text-anchor="end">
-      <text x="170" y="244">$0</text>
-      <text x="170" y="144">$4</text>
-      <text x="170" y="44">$8</text>
-    </g>
-    <g stroke="#e8e8e2" stroke-width="1" stroke-dasharray="2 4">
-      <line x1="180" y1="144" x2="700" y2="144"/>
-      <line x1="180" y1="44" x2="700" y2="44"/>
-    </g>
-
-    <!-- group: old vs new for category 1 -->
-    <rect x="220" y="44" width="40" height="196" fill="#ecdfb8" stroke="#b88a4a"/>
-    <text x="240" y="35" text-anchor="middle" fill="#7a6420" font-weight="600">$8</text>
-    <rect x="265" y="238" width="40" height="2" fill="#a5c0d8" stroke="#6f9bb8"/>
-    <text x="285" y="232" text-anchor="middle" fill="#6f9bb8" font-weight="600">$0</text>
-    <text x="262" y="262" text-anchor="middle" fill="#4a4a4a">Category 1</text>
-
-    <!-- legend -->
-    <g transform="translate(40, 50)" font-size="10" fill="#7a7a7a">
-      <rect x="0" y="0" width="14" height="10" fill="#ecdfb8" stroke="#b88a4a"/>
-      <text x="20" y="9">Old</text>
-      <rect x="0" y="20" width="14" height="10" fill="#a5c0d8" stroke="#6f9bb8"/>
-      <text x="20" y="29">New</text>
-    </g>
-  </svg>
-  <figcaption><span class="fig-num">FIG 3</span>Bar comparison</figcaption>
-</figure>
-```
-
----
-
-## 4) Stacked layers (three or N tiers)
-
-Good for: layered architecture (frontend / service / storage), layered data flow.
-
-```html
-<figure>
-  <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg"
-       font-family="ui-monospace, Menlo, monospace" font-size="12">
-    <rect width="760" height="360" fill="#fff"/>
-
-    <!-- layer 1 -->
-    <rect x="80" y="40" width="600" height="80" fill="#eef4f8" stroke="#6f9bb8" stroke-width="1.4"/>
-    <text x="92" y="60" fill="#6f9bb8" font-weight="600" letter-spacing="0.1em" font-size="11">LAYER 1 · Frontend</text>
-    <text x="92" y="80" fill="#7a7a7a" font-size="10.5" font-style="italic">→ Deploy target</text>
-    <text x="92" y="102" fill="#4a4a4a">Description</text>
-
-    <!-- layer 2 -->
-    <rect x="80" y="140" width="600" height="80" fill="#f5ecdc" stroke="#b88a4a" stroke-width="1.4"/>
-    <text x="92" y="160" fill="#7a6420" font-weight="600" letter-spacing="0.1em" font-size="11">LAYER 2 · Service</text>
-    <text x="92" y="180" fill="#7a7a7a" font-size="10.5" font-style="italic">→ Deploy target</text>
-    <text x="92" y="202" fill="#4a4a4a">Description</text>
-
-    <!-- layer 3 -->
-    <rect x="80" y="240" width="600" height="80" fill="#ecede5" stroke="#6b7560" stroke-width="1.4"/>
-    <text x="92" y="260" fill="#5a5a3a" font-weight="600" letter-spacing="0.1em" font-size="11">LAYER 3 · Storage</text>
-    <text x="92" y="280" fill="#7a7a7a" font-size="10.5" font-style="italic">→ Deploy target</text>
-    <text x="92" y="302" fill="#4a4a4a">Description</text>
-  </svg>
-  <figcaption><span class="fig-num">FIG 4</span>Stacked architecture</figcaption>
-</figure>
-```
-
----
-
-## 5) Lifecycle · timeline with events + a branch point
-
-Good for: state transitions, user journey, phase switches.
-
-```html
-<figure>
-  <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg"
-       font-family="ui-monospace, Menlo, monospace" font-size="11">
-    <rect width="760" height="280" fill="#fff"/>
-
-    <!-- time axis -->
-    <line x1="180" y1="240" x2="720" y2="240" stroke="#7a7a7a"/>
-    <g fill="#7a7a7a" font-size="10">
-      <text x="180" y="260" text-anchor="middle">Start</text>
-      <text x="360" y="260" text-anchor="middle">Phase 1</text>
-      <text x="540" y="260" text-anchor="middle">Phase 2</text>
-      <text x="720" y="260" text-anchor="middle">End state</text>
-    </g>
-    <line x1="540" y1="40" x2="540" y2="240" stroke="#a05050" stroke-width="1" stroke-dasharray="3 3"/>
-    <text x="540" y="30" text-anchor="middle" fill="#a05050" font-weight="600">Switch point</text>
-
-    <!-- discrete events -->
-    <rect x="200" y="85" width="40" height="20" fill="#a5c0d8" stroke="#6f9bb8"/>
-    <rect x="340" y="85" width="40" height="20" fill="#a5c0d8" stroke="#6f9bb8"/>
-    <rect x="450" y="85" width="40" height="20" fill="#a5c0d8" stroke="#6f9bb8"/>
-
-    <!-- continuous after switch -->
-    <rect x="540" y="180" width="180" height="24" fill="#a5c0d8" stroke="#6f9bb8" stroke-width="1.5"/>
-    <text x="630" y="196" text-anchor="middle" fill="#4a4a4a">Persistent state</text>
-  </svg>
-  <figcaption><span class="fig-num">FIG 5</span>Lifecycle</figcaption>
-</figure>
-```
-
----
-
-## SVG general tips
-
-- **Always start with `<rect width=... height=... fill="#fff"/>`** as a background. Otherwise the figure border and the SVG leak paper color between them.
-- **Node rectangles:** `stroke-width="1.2"` is thin, `1.4-1.5` is medium, `2` is emphatic.
-- **Dash rhythm:** auxiliary lines `stroke-dasharray="2 4"`, weak dependencies `stroke-dasharray="3 3"`.
-- **text-anchor:** `start` (default) / `middle` / `end`.
-- **Legend:** top-left or top-right via `<g transform="translate(40, 30)">`, with 14×10 swatches and labels.
-- **Arrows:** define one `<defs><marker>...` per figure, then every `<path marker-end="url(#arr)">` reuses it.
-- **No more than 5 distinct colors.** The more restrained the palette, the better the "paper" feel.
+For interface controls around a figure, copy only the symbol needed from `assets/icons/lucide-subset.svg`. Preserve its Lucide 0.468.0 ISC comment. Do not use the icon subset as decorative content inside explanatory diagrams unless an icon genuinely improves comprehension.

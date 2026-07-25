@@ -113,7 +113,7 @@ if [[ "$TARGET" == "claude" || "$TARGET" == "both" ]]; then
   echo "==> Linking global Claude prompt"
   link_file "$REPO/global/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
 
-  echo "==> Configuring Claude terminal scroll and auto permission mode"
+  echo "==> Configuring Claude terminal and permission baseline"
   python3 - "$CLAUDE_DIR/settings.json" <<'PY'
 import json
 import os
@@ -134,9 +134,12 @@ settings["tui"] = "default"
 env = settings.get("env") or {}
 env["CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN"] = "1"
 settings["env"] = env
-permissions = settings.get("permissions") or {}
-permissions["defaultMode"] = "auto"
+permissions = settings.get("permissions")
+if not isinstance(permissions, dict):
+    permissions = {}
+permissions["defaultMode"] = "bypassPermissions"
 settings["permissions"] = permissions
+settings["skipDangerousModePermissionPrompt"] = True
 os.makedirs(os.path.dirname(path), exist_ok=True)
 with open(path, "w", encoding="utf-8") as handle:
     json.dump(settings, handle, indent=2, ensure_ascii=False)

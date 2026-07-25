@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-article-style="xju-notion">
+<html lang="zh-CN" data-article-style="paper-proposal">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -242,506 +242,481 @@ pre {
 }
 
 
-/* xju-notion profile for article-to-html
- * Portable subset adapted from xju-feiyue at revision
- * fd4d4ac61fa70901a4c34e5601aec5f9a4c66a27:
- *   frontend/src/styles/tokens.css
- *   frontend/src/styles/globals.css
- *   frontend/src/styles/prose-claude.css
- * Copyright (c) 2026 winbeau. Used and modified under the MIT License.
- * See ../../ATTRIBUTION.md. No remote fonts, Tailwind directives, shadcn
- * bridge variables, feature styles, or comment-anchor behavior are included.
+/* paper-proposal profile for article-to-html
+ * First-party migration of the skill's original visual system. This profile
+ * deliberately preserves the paper palette, serif body, monospace metadata,
+ * TL;DR block, numbered H2 headings, FIG labels, cards, callouts, tables,
+ * and footer. Light-only; no remote fonts or runtime assets.
  */
 
 :root {
-  --color-bg: #ffffff;
-  --color-bg-subtle: #f7f6f3;
-  --color-bg-hover: #f1f1ef;
-  --color-text: #37352f;
-  --color-text-muted: #787774;
-  --color-text-faint: #9b9a97;
-  --color-border: #edece9;
-  --color-border-strong: #dcdad4;
-  --color-link: #2383e2;
-  --color-accent: #0f7b6c;
-  --color-accent-soft: rgba(15, 123, 108, 0.1);
-  --color-warn: #d9730d;
-  --color-warn-soft: rgba(217, 115, 13, 0.1);
-  --code-inline-bg: rgba(135, 131, 120, 0.15);
-  --code-inline-fg: #eb5757;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --transition: 150ms ease;
-  --font-sans: "Inter Tight", "PingFang SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-serif: "Source Serif 4", "Noto Serif SC", "Songti SC", Georgia, serif;
-  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --paper: #f7f7f5;
+  --paper-edge: #efefea;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-faint: #7a7a7a;
+  --rule: #d8d8d2;
+  --rule-soft: #e8e8e2;
+  --accent: #6f9bb8;
+  --accent-soft: #d9e6f0;
+  --accent-faint: #eef4f8;
+  --warn: #b88a4a;
+  --warn-soft: #f5ecdc;
+  --danger: #a05050;
+  --code-bg: #ececea;
+  --brain: #6f9bb8;
+  --hands: #b88a4a;
+  --session: #6b7560;
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-serif);
-  font-size: 16px;
-  line-height: 1.75;
-  padding: 56px 24px 88px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: ui-serif, "Charter", "Iowan Old Style", "Source Serif Pro", Georgia, serif;
+  line-height: 1.6;
+  padding: 64px 24px 96px;
 }
 
 .skip-link {
-  color: var(--color-text);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-card);
-  font-family: var(--font-sans);
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
 }
 
 .doc {
-  max-width: 720px;
+  max-width: 840px;
   margin-inline: auto;
 }
 
 .doc-header {
-  margin-bottom: 40px;
-}
-
-.doc-eyebrow,
-.doc-meta,
-.tldr-label,
-.callout-label,
-figcaption,
-.card-icon,
-.card-where,
-.btn,
-label,
-footer h2,
-footer h3,
-footer h4 {
-  font-family: var(--font-sans);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 28px;
+  margin-bottom: 48px;
 }
 
 .doc-eyebrow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.mascot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  background: var(--color-accent);
-  flex: 0 0 auto;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
 }
 
 .doc-title {
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 5vw, 2.65rem);
-  font-weight: 700;
+  font-family: ui-serif, Charter, Georgia, serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.2;
-  letter-spacing: -0.025em;
 }
 
 .doc-subtitle {
-  margin-top: 12px;
-  color: var(--color-text-muted);
-  font-size: 1.05rem;
-  line-height: 1.65;
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  font-style: italic;
 }
 
 .doc-meta {
-  gap: 8px 18px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
   margin-top: 18px;
-  color: var(--color-text-faint);
-  font-size: 12px;
+  gap: 24px;
 }
 
 .tldr {
-  margin-bottom: 44px;
-  padding: 18px 20px;
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  background: var(--accent-faint);
+  border-left: 2px solid var(--accent);
+  padding: 20px 24px;
+  margin-bottom: 56px;
+  font-size: 15px;
 }
 
-.tldr-label,
-.callout-label {
-  margin-bottom: 7px;
-  color: var(--color-text-muted);
+.tldr-label {
+  font-family: ui-monospace, Menlo, monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 section {
-  margin-bottom: 48px;
+  margin-bottom: 56px;
   scroll-margin-top: 24px;
 }
 
-h2,
-h3,
-h4 {
-  font-family: var(--font-serif);
-  color: var(--color-text);
+h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
 }
 
-h2 {
-  margin: 2rem 0 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.35;
+h2 .num {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-weight: 500;
+  margin-right: 14px;
+  letter-spacing: 0.05em;
 }
 
 h3 {
-  margin: 1.5rem 0 0.75rem;
-  font-size: 1.25rem;
+  font-size: 16px;
   font-weight: 600;
-  line-height: 1.4;
+  margin: 28px 0 10px;
 }
 
 h4 {
-  margin: 1.5rem 0 0.75rem;
-  font-size: 1.05rem;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.45;
+  margin: 22px 0 8px;
 }
 
 p {
-  margin: 1em 0;
+  margin-bottom: 14px;
+}
+
+p + p {
+  margin-top: -2px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-soft);
+}
+
+a:hover {
+  border-bottom-color: var(--accent);
+}
+
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+pre {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  background: var(--code-bg);
+  padding: 14px 18px;
+  margin: 14px 0 18px;
+  border-left: 2px solid var(--rule);
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
 }
 
 ul,
 ol {
-  margin: 1em 0;
-  padding-left: 1.5em;
-}
-
-ul {
-  list-style: disc;
-}
-
-ol {
-  list-style: decimal;
+  margin: 8px 0 16px 22px;
+  padding: 0;
 }
 
 li {
-  margin: 0.3em 0;
+  margin-bottom: 6px;
 }
 
 strong {
-  font-weight: 650;
-}
-
-em {
-  color: var(--color-text-muted);
-}
-
-a {
-  color: var(--color-link);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  transition: color var(--transition), text-decoration-color var(--transition);
-}
-
-a:hover {
-  color: #1666b8;
-}
-
-code,
-kbd,
-samp,
-pre,
-.num {
-  font-family: var(--font-mono);
-}
-
-code {
-  padding: 0.15em 0.35em;
-  border-radius: var(--radius-sm);
-  background: var(--code-inline-bg);
-  color: var(--code-inline-fg);
-  font-size: 0.875em;
-}
-
-pre {
-  margin: 1.5em 0;
-  padding: 1em 1.25em;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-subtle);
-  color: var(--color-text);
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
-pre code {
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  font-size: inherit;
-}
-
-blockquote {
-  margin: 1.25em 0;
-  padding-left: 1em;
-  border-left: 3px solid var(--color-text-muted);
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
-.callout {
-  margin: 18px 0 22px;
-  padding: 16px 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-card);
-}
-
-.callout.warn {
-  border-color: rgba(217, 115, 13, 0.25);
-  background: var(--color-warn-soft);
-}
-
-.callout.warn .callout-label {
-  color: var(--color-warn);
-}
-
-.callout.cite {
-  border-left: 3px solid var(--color-accent);
-  background: var(--color-accent-soft);
-  font-style: italic;
-}
-
-.cite-source {
-  margin-top: 10px;
-  color: var(--color-text-muted);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-style: normal;
-}
-
-figure {
-  margin: 28px 0 32px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-card);
-}
-
-figure > svg,
-figure > img {
-  width: 100%;
-  background: var(--color-bg);
-}
-
-figcaption {
-  padding: 10px 14px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.fig-num {
-  margin-right: 8px;
-  color: var(--color-accent);
   font-weight: 600;
 }
 
+em {
+  color: var(--ink-soft);
+}
+
+blockquote {
+  border-left: 2px solid var(--rule);
+  padding: 4px 0 4px 18px;
+  margin: 14px 0 18px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
 .table-wrap {
-  margin: 1.5em 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
+  margin: 14px 0 18px;
 }
 
 table {
   width: 100%;
   min-width: 560px;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.95em;
+  border-collapse: collapse;
+  font-size: 14px;
 }
 
 caption {
-  padding: 10px 14px;
-  color: var(--color-text-muted);
-  font-family: var(--font-sans);
-  font-size: 12px;
+  padding: 0 0 8px;
+  color: var(--ink-faint);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
   text-align: left;
-}
-
-thead {
-  background: var(--color-bg-subtle);
 }
 
 th,
 td {
-  padding: 0.55em 1em;
-  border-bottom: 1px solid var(--color-border);
   text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--rule-soft);
   vertical-align: top;
 }
 
 th {
-  font-family: var(--font-sans);
-  font-size: 0.88em;
   font-weight: 600;
-}
-
-tr:last-child td {
-  border-bottom: 0;
-}
-
-tbody tr {
-  transition: background var(--transition);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px solid var(--rule);
 }
 
 tbody tr:hover {
-  background: var(--color-bg-subtle);
+  background: rgba(0, 0, 0, 0.015);
 }
 
 td.num {
-  font-size: 0.9em;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 13px;
 }
 
 td.accent {
-  color: var(--color-accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.callout {
+  border: 1px solid var(--rule);
+  background: #fff;
+  padding: 16px 18px;
+  margin: 16px 0 20px;
+}
+
+.callout.warn {
+  border-color: #e6d4a8;
+  background: var(--warn-soft);
+}
+
+.callout.cite {
+  border-left: 2px solid var(--accent);
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  background: var(--accent-faint);
+  padding-left: 22px;
+  font-style: italic;
+}
+
+.callout-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.callout.warn .callout-label {
+  color: var(--warn);
+}
+
+.cite-source {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 10px;
+  font-family: ui-monospace, Menlo, monospace;
+}
+
+figure {
+  margin: 28px 0 32px;
+  border: 1px solid var(--rule);
+  background: #fff;
+}
+
+figure svg,
+figure img {
+  width: 100%;
+}
+
+figcaption {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 10px 16px;
+  border-top: 1px solid var(--rule-soft);
+  background: var(--paper-edge);
+}
+
+figcaption .fig-num {
+  color: var(--accent);
+  margin-right: 10px;
   font-weight: 600;
 }
 
 .cards {
-  gap: 12px;
-  margin: 20px 0;
+  gap: 14px;
+  margin: 20px 0 18px;
 }
 
 .card {
-  padding: 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-card);
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-}
-
-.card:hover {
-  border-color: var(--color-border-strong);
-  transform: translateY(-1px);
+  border: 1px solid var(--rule);
+  background: #fff;
+  padding: 16px 16px 14px;
 }
 
 .card-icon {
-  margin-bottom: 8px;
-  color: var(--color-accent);
+  font-family: ui-monospace, Menlo, monospace;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .card-name {
-  margin-bottom: 5px;
-  font-size: 1.05rem;
-  font-weight: 650;
+  font-family: ui-serif, Charter, Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .card-where {
-  margin-bottom: 8px;
-  color: var(--color-text-faint);
   font-size: 12px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin-bottom: 10px;
 }
 
 .card-desc {
-  color: var(--color-text-muted);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.card.tone-a .card-icon {
+  color: var(--brain);
+}
+
+.card.tone-b .card-icon {
+  color: var(--hands);
+}
+
+.card.tone-c .card-icon {
+  color: var(--session);
 }
 
 .btn,
-.icon-button,
-input,
-select,
-textarea {
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  color: var(--color-text);
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
-}
-
-.btn {
-  min-height: 40px;
+.icon-button {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: 8px 14px;
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--rule);
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  transition: background 0.15s;
 }
 
 .btn:hover,
 .icon-button:hover {
-  background: var(--color-bg-hover);
+  background: var(--paper-edge);
 }
 
 .btn.primary {
-  border-color: var(--color-text);
-  background: var(--color-text);
-  color: var(--color-bg);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
-input,
-select,
-textarea {
+.btn.primary:hover {
+  background: #5a87a4;
+}
+
+input[type="text"],
+input[type="email"],
+textarea,
+select {
+  font-family: ui-serif, Charter, Georgia, serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  color: var(--ink);
   width: 100%;
-  margin-bottom: 12px;
-  padding: 9px 11px;
+  margin-bottom: 10px;
 }
 
 label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
   display: block;
-  margin-bottom: 5px;
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 footer {
-  margin-top: 72px;
-  padding-top: 22px;
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: 13px;
+  margin-top: 80px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  color: var(--ink-faint);
 }
 
 footer h2,
 footer h3,
 footer h4 {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: ui-monospace, Menlo, monospace;
   margin: 0 0 10px;
   padding: 0;
   border: 0;
-  color: var(--color-text);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 footer ul {
-  margin: 0;
-  padding-left: 1.25em;
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+}
+
+footer li {
+  margin-bottom: 4px;
+}
+
+.mascot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 @media (max-width: 720px) {
@@ -749,25 +724,13 @@ footer ul {
     padding: 32px 16px 64px;
   }
 
-  .doc-header {
-    margin-bottom: 32px;
-  }
-
   .doc-title {
-    font-size: 2rem;
+    font-size: 26px;
   }
 
-  .tldr {
-    margin-bottom: 36px;
-    padding: 16px;
-  }
-
-  section {
-    margin-bottom: 40px;
-  }
-
-  h2 {
-    font-size: 1.35rem;
+  .doc-meta {
+    gap: 24px;
+    flex-wrap: nowrap;
   }
 
   table {
@@ -808,7 +771,7 @@ footer ul {
 
       <!-- ──────────────────── Section 1 ──────────────────── -->
       <section>
-        <h2>当前架构的问题</h2>
+        <h2><span class="num">01</span>当前架构的问题</h2>
 
         <p>
           现在每接入一个新用户，都要在 Fly.io 上配一台 VM，里面装着 agent loop、tenant 前端、所有持久化状态。
@@ -888,7 +851,7 @@ footer ul {
               </marker>
             </defs>
           </svg>
-          <figcaption><span class="fig-num">Figure 1.</span>当前架构 · 每用户一台 VM，前端 / agent / 工具 / 持久化全部打包</figcaption>
+          <figcaption><span class="fig-num">FIG 1</span>当前架构 · 每用户一台 VM，前端 / agent / 工具 / 持久化全部打包</figcaption>
         </figure>
 
         <ul>
@@ -902,7 +865,7 @@ footer ul {
 
       <!-- ──────────────────── Section 2 ──────────────────── -->
       <section>
-        <h2>Anthropic 的范式 · Brain · Hands · Session</h2>
+        <h2><span class="num">02</span>Anthropic 的范式 · Brain · Hands · Session</h2>
 
         <p>
           Anthropic 在他们自己的 Claude managed agents 平台上踩过完全一样的坑：单容器把一切打包在一起，
@@ -952,7 +915,7 @@ footer ul {
 
       <!-- ──────────────────── Section 3 ──────────────────── -->
       <section>
-        <h2>新架构 · 三层解耦</h2>
+        <h2><span class="num">03</span>新架构 · 三层解耦</h2>
 
         <!-- FIG 2 — New three-layer architecture -->
         <figure>
@@ -1049,7 +1012,7 @@ footer ul {
             <text x="430" y="225" fill="#6b7560" font-size="10" text-anchor="middle">read / write</text>
             <text x="640" y="225" fill="#6b7560" font-size="10" text-anchor="middle">mount</text>
           </svg>
-          <figcaption><span class="fig-num">Figure 2.</span>新架构 · 前端 / 中心 agent / sandbox / 持久化 各自独立伸缩</figcaption>
+          <figcaption><span class="fig-num">FIG 2</span>新架构 · 前端 / 中心 agent / sandbox / 持久化 各自独立伸缩</figcaption>
         </figure>
 
         <h3>各层职责</h3>
@@ -1120,7 +1083,7 @@ footer ul {
 
       <!-- ──────────────────── Section 4 ──────────────────── -->
       <section>
-        <h2>对比 · Onboarding 时序与成本</h2>
+        <h2><span class="num">04</span>对比 · Onboarding 时序与成本</h2>
 
         <p>
           架构差异最直接的体现在用户 onboarding 上。下图把"新用户从填表到看到第一个 Proposal"这条路径放在同一条时间轴上对比。
@@ -1213,7 +1176,7 @@ footer ul {
               <text x="310" y="9">后台异步任务（用户无感）</text>
             </g>
           </svg>
-          <figcaption><span class="fig-num">Figure 3.</span>Onboarding 时序对比 · 新架构把基建等待移出关键路径</figcaption>
+          <figcaption><span class="fig-num">FIG 3</span>Onboarding 时序对比 · 新架构把基建等待移出关键路径</figcaption>
         </figure>
 
         <p>
@@ -1294,7 +1257,7 @@ footer ul {
               <text x="0" y="76" fill="#7a7a7a" font-size="9.5">不含 LLM、Postgres 成本</text>
             </g>
           </svg>
-          <figcaption><span class="fig-num">Figure 4.</span>每用户基建成本对比 · 免费用户从 ~$8 → ~$0，付费用户基本持平或略涨</figcaption>
+          <figcaption><span class="fig-num">FIG 4</span>每用户基建成本对比 · 免费用户从 ~$8 → ~$0，付费用户基本持平或略涨</figcaption>
         </figure>
 
         <p>
@@ -1306,7 +1269,7 @@ footer ul {
 
       <!-- ──────────────────── Section 5 ──────────────────── -->
       <section>
-        <h2>Tier 1 / Tier 2 · 同一套基建，两种产品形态</h2>
+        <h2><span class="num">05</span>Tier 1 / Tier 2 · 同一套基建，两种产品形态</h2>
 
         <p>
           这套架构同时支持两种产品形态，<strong>共用同一个 agent loop 代码</strong>，区别只在 sandbox 生命周期和工具集。
@@ -1366,7 +1329,7 @@ footer ul {
               <text x="20" y="29">共享存储 subpath</text>
             </g>
           </svg>
-          <figcaption><span class="fig-num">Figure 5.</span>Tier 1 / Tier 2 sandbox 生命周期 · 转化时仅 subpath 变更，无数据迁移</figcaption>
+          <figcaption><span class="fig-num">FIG 5</span>Tier 1 / Tier 2 sandbox 生命周期 · 转化时仅 subpath 变更，无数据迁移</figcaption>
         </figure>
 
         <div class="table-wrap" role="region" aria-label="Tier 1 与 Tier 2 产品形态对照" tabindex="0">
@@ -1423,7 +1386,7 @@ footer ul {
 
       <!-- ──────────────────── Section 6 ──────────────────── -->
       <section>
-        <h2>对 Sandbox Service 的需求清单</h2>
+        <h2><span class="num">06</span>对 Sandbox Service 的需求清单</h2>
 
         <p>
           先不绑定具体供应商。这套架构对 sandbox service 层有以下硬需求和软需求,据此对市面方案打分。
@@ -1509,7 +1472,7 @@ footer ul {
 
       <!-- ──────────────────── Section 7 ──────────────────── -->
       <section>
-        <h2>迁移路径</h2>
+        <h2><span class="num">07</span>迁移路径</h2>
 
         <p>分阶段，最小可发布优先，每阶段独立可验证。</p>
 
@@ -1560,7 +1523,7 @@ footer ul {
 
       <!-- ──────────────────── Section 8 ──────────────────── -->
       <section>
-        <h2>待决策 · 开放问题</h2>
+        <h2><span class="num">08</span>待决策 · 开放问题</h2>
 
         <ol>
           <li><strong>Tier 1 agent 工具集边界</strong>。研究 agent 只用 read_file / write_file / web_search / save_proposal，还是也要 memory tools？决定 PoC 是否要测某种形式的向量库 over 网络存储。</li>

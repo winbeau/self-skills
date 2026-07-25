@@ -1,0 +1,4 @@
+interface:
+  display_name: "Set Claude Config"
+  short_description: "Apply and troubleshoot my Claude Code config preset"
+  default_prompt: "Use $set-config to apply or troubleshoot my personal Claude Code settings preset."

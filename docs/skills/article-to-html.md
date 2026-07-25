@@ -1,123 +1,116 @@
 # article-to-html Skill
 
-`article-to-html` is a Codex skill for turning a Markdown draft, pasted document, or conversation-context document into a self-contained, paper-style HTML page.
+`article-to-html` turns a Markdown draft, pasted document, or conversation-context document into one safe, self-contained static HTML file. It is prompt-driven rather than a general Markdown renderer: the agent understands the document, escapes source markup, and deliberately authors semantic HTML.
 
-It is designed for static "proposal paper" documents: serif body text, monospace metadata, numbered sections, TL;DR blocks, callouts, tables, inline SVG figures, and optional vanilla JavaScript interactions.
+## Styles
 
-Example output: <https://magiccube.github.io/article-to-html-skill/>
+The style registry is `assets/styles/manifest.json`.
 
-## What It Generates
+- **Default: `xju-notion`** — a light-only, warm-neutral 720 px serif document profile adapted from the pinned XJU prose system. It uses local-first fonts, 6/8/12 px radii, subtle card shadows, and restrained 150 ms transitions.
+- **`paper-proposal`** — the original visual system: paper palette, serif body, monospace metadata, TL;DR, numbered H2 headings, FIG labels, cards, callouts, tables, and footer.
+- **Aliases:** `paper` and `proposal` both select `paper-proposal`.
 
-The skill produces a single portable `.html` file with:
+An explicit style request wins. Unknown explicit styles are reported with the available names instead of silently falling back.
 
-- Inline CSS, SVG, and JavaScript
-- No remote fonts, CDNs, or external image dependencies
-- A stable paper-like visual system based on `references/template.html`
-- Numbered sections using `01`, `02`, `03`, etc.
-- A required TL;DR block near the top
-- Optional figures, tables, callouts, code blocks, cards, and footers
-- Optional interactivity such as collapsible sections, copy buttons, table filtering, scrollspy, dark mode, and localStorage-backed forms
-
-## When To Use It
-
-Use this skill when you want Codex to convert written material into a polished static web document, for example:
+Examples:
 
 ```text
-Turn this Markdown into a single-page HTML document.
-Render docs/proposal.md as a paper-style HTML page.
-Make a pretty article HTML version of this draft.
-Convert this RFC into one self-contained HTML file.
+Turn this draft into one self-contained HTML document.
+Use article-to-html with the paper-proposal style for docs/rfc.md.
+Render this as article HTML, style paper.
 ```
 
-Do not use this skill for slide decks, multi-page sites, backend applications, or documents that require live external services.
+## Scope
 
-## Installation
+Use this Skill for generic self-contained article/document HTML such as reports, proposals, RFCs, tutorials, and long-form notes.
 
-Clone or copy this directory into your Codex skills directory:
+Do not use it for:
+
+- multi-page sites or web applications;
+- React/UI prototypes;
+- slides;
+- PDF or LaTeX output;
+- OpenReview exports (use `openreview-to-html`);
+- documents requiring a backend or live external services.
+
+## Output contract
+
+The output is one `.html` file with:
+
+- inline CSS and optional inline vanilla JavaScript;
+- inline SVG and, only when necessary, embedded `data:` images;
+- no CDN, remote font/image, external runtime asset, Tailwind/React runtime, or full icon package;
+- a restrictive Content Security Policy;
+- escaped source raw HTML and rejected unsafe tags (including forms), URL schemes, event attributes, DOM sinks, and network APIs;
+- a declared language, exactly one H1, valid heading order, unique IDs, a skip link, keyboard focus, reduced-motion behavior, and narrow-viewport handling;
+- image alt text, labeled/scoped tables, informative SVG titles/descriptions, and labeled controls.
+
+Both profiles are light-only. The Skill does not recommend or generate dark mode.
+
+## Output location
+
+- A source file path produces output beside the source unless the user specifies another path.
+- Conversation-context input produces output in the current directory.
+- The default filename is an English lowercase hyphenated title slug, at most 40 characters.
+- Existing files are not silently overwritten; `-v2`, `-v3`, and so on are used.
+
+## Repository structure
+
+```text
+skills/article-to-html/
+├── SKILL.md
+├── ATTRIBUTION.md
+├── agents/
+│   └── openai.yaml
+├── assets/
+│   ├── template.html
+│   ├── example.html
+│   ├── example-paper-proposal.html
+│   ├── icons/
+│   │   └── lucide-subset.svg
+│   └── styles/
+│       ├── manifest.json
+│       ├── base.css
+│       ├── xju-notion.css
+│       └── paper-proposal.css
+├── references/
+│   ├── components.md
+│   ├── svg-figures.md
+│   └── interactive.md
+└── scripts/
+    └── validate_article_html.py
+```
+
+- `assets/template.html` is the safe blank scaffold with the CSP.
+- `assets/styles/base.css` defines style-neutral component, focus, responsive, table, card, and icon contracts.
+- The two profile stylesheets contain visual treatment only.
+- `assets/example.html` and `assets/example-paper-proposal.html` render the same fixture with different profiles.
+- `assets/icons/lucide-subset.svg` contains only four Lucide 0.468.0 symbols. See `ATTRIBUTION.md` for XJU MIT and Lucide ISC notices.
+
+## Validation
+
+The validator has no third-party Python dependency.
 
 ```bash
-mkdir -p "$HOME/.codex/skills"
-git clone git@github.com:MagicCube/article-to-html-skill.git "$HOME/.codex/skills/article-to-html"
+python3 -m py_compile skills/article-to-html/scripts/validate_article_html.py
+python3 skills/article-to-html/scripts/validate_article_html.py --check-assets
+python3 skills/article-to-html/scripts/validate_article_html.py --self-test
+
+python3 skills/article-to-html/scripts/validate_article_html.py \
+  --input skills/article-to-html/assets/example.html \
+  --style xju-notion \
+  --screenshot /tmp/article-xju-desktop.png \
+  --mobile-screenshot /tmp/article-xju-mobile.png
 ```
 
-If your environment uses `CODEX_HOME`, install it there instead:
+Screenshot checks require a Linux Chrome/Chromium binary. The mobile smoke viewport is 500×844 because headless Chrome clamps very narrow desktop windows.
 
-```bash
-mkdir -p "$CODEX_HOME/skills"
-git clone git@github.com:MagicCube/article-to-html-skill.git "$CODEX_HOME/skills/article-to-html"
-```
+## Development notes
 
-After installation, Codex can trigger the skill when the user asks to render Markdown, a draft, or pasted prose as static article HTML.
+This Skill has no renderer package or build system. When changing it:
 
-## Usage
-
-Give Codex a Markdown file path:
-
-```text
-Use article-to-html to render ./docs/new-infra-proposal.md.
-```
-
-Or paste a draft directly into the conversation:
-
-```text
-Turn the following draft into a paper-style single-file HTML page:
-
-# Proposal Title
-...
-```
-
-By default, the generated file is saved:
-
-- In the same directory as the source Markdown file, if a file path was provided
-- In the current working directory, if the source came from conversation context
-- At the user-specified path, if the user provides one
-
-The output filename is an English, lowercase, hyphenated slug of the document title. Existing files are not silently overwritten; the skill appends `-v2`, `-v3`, and so on when needed.
-
-## Design Contract
-
-The generated HTML should keep these core invariants:
-
-- Single-file output only
-- Paper palette: `--paper: #f7f7f5` and `--ink: #1a1a1a`
-- Serif body text with monospace metadata
-- TL;DR block near the top, synthesized if the source does not include one
-- Numbered section headings in the form `<span class="num">01</span>`
-- Inline SVG figures with numbered captions such as `FIG 1`
-- No external images, fonts, CDNs, or "generated by AI" watermark unless explicitly requested
-
-## Repository Structure
-
-```text
-.
-+-- SKILL.md
-+-- assets/
-|   +-- example.html
-+-- references/
-    +-- components.md
-    +-- interactive.md
-    +-- svg-figures.md
-    +-- template.html
-```
-
-- `SKILL.md` defines the trigger conditions, workflow, design invariants, naming rules, and common mistakes.
-- `references/template.html` is the base scaffold with the complete visual system.
-- `references/components.md` contains reusable HTML snippets for headers, TL;DR blocks, sections, callouts, figures, cards, tables, code blocks, and footers.
-- `references/svg-figures.md` contains inline SVG skeletons for common diagrams.
-- `references/interactive.md` contains optional vanilla JavaScript snippets.
-- `assets/example.html` is a completed reference render used as a visual benchmark.
-
-## Development Notes
-
-This skill has no package manager, build step, or runtime dependency. It is a prompt-and-template bundle consumed by Codex.
-
-When editing the skill:
-
-- Keep `SKILL.md` concise and operational.
-- Put reusable HTML/CSS/JS patterns in `references/`.
-- Keep generated examples self-contained.
-- Preserve the visual identity unless intentionally changing the design system.
-
-## License
-
-No license file is currently included. Add one before distributing or reusing this skill outside its intended environment.
+1. keep the registry and examples consistent;
+2. inline `base.css` before exactly one selected profile;
+3. preserve required attribution comments in copied CSS/SVG;
+4. keep component guidance style-neutral and style/content policy in `SKILL.md`;
+5. run the focused validator plus the repository-wide `python3 scripts/validate_skills.py`.

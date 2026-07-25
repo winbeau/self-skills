@@ -20,7 +20,7 @@ Human-facing manuals live in `docs/skills/`. License and attribution files remai
 |---|---|
 | [`academic-rebuttal`](skills/academic-rebuttal/) | Triage reviews, prioritize experiments, and draft evidence-grounded rebuttals |
 | [`academic-writing`](skills/academic-writing/) | Audit and rewrite academic prose without inventing evidence |
-| [`article-to-html`](skills/article-to-html/) | Render a document as a self-contained paper-style HTML file |
+| [`article-to-html`](skills/article-to-html/) | Render a safe self-contained article with xju-notion or paper-proposal styling |
 | [`article-to-latex`](skills/article-to-latex/) | Create, compile, debug, and convert LaTeX/PDF documents |
 | [`humanizer-zh`](skills/humanizer-zh/) | Make Chinese writing natural and less formulaic |
 | [`idea-scan`](skills/idea-scan/) | Map evidence-backed research gaps and opportunity signals |
@@ -31,6 +31,7 @@ Human-facing manuals live in `docs/skills/`. License and attribution files remai
 | [`idea-synthesize`](skills/idea-synthesize/) | Coordinate and summarize the idea discovery workflow |
 | [`notify-win`](skills/notify-win/) | Send a Windows desktop toast and sound alert |
 | [`openreview-to-html`](skills/openreview-to-html/) | Capture authenticated OpenReview discussions as self-contained HTML |
+| [`set-config`](skills/set-config/) | Apply the personal Claude Code settings baseline and diagnose configuration resets |
 | [`set-localhost`](skills/set-localhost/) | Bind a tailnet device for the `mybox` remote workflow |
 | [`ship-wpf-github-release`](skills/ship-wpf-github-release/) | Build, package, and release WPF apps on GitHub |
 | [`tmux-ssh-remote`](skills/tmux-ssh-remote/) | Operate remote hosts through persistent tmux SSH sessions |
@@ -88,6 +89,7 @@ python3 skills/xju-docx/scripts/check_docx_package.py /tmp/xju-smoke.docx
 Per-Skill manuals are under [`docs/skills/`](docs/skills/). Notable provenance:
 
 - `academic-rebuttal` is vendored from [TobiasLee/Rebuttal-Skill](https://github.com/TobiasLee/Rebuttal-Skill) at a fixed commit. Upstream declared no license; see [ATTRIBUTION.md](skills/academic-rebuttal/ATTRIBUTION.md) before redistribution or modification.
+- `article-to-html` provides a dependency-free safety/accessibility validator, two light-only style profiles, XJU MIT attribution, and a four-icon Lucide ISC subset; see [ATTRIBUTION.md](skills/article-to-html/ATTRIBUTION.md) and its [manual](docs/skills/article-to-html.md).
 - `article-to-latex` is a vendored, modified MIT Skill; see [ATTRIBUTION.md](skills/article-to-latex/ATTRIBUTION.md).
 - `humanizer-zh` keeps its upstream [LICENSE](skills/humanizer-zh/LICENSE).
 - `xju-docx` is synchronized from the local working copy and includes OOXML repair diagnostics. Its upstream canonical project remains [XjuSelab/xju-feiyue](https://github.com/XjuSelab/xju-feiyue).
