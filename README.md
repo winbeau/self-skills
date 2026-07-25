@@ -22,6 +22,7 @@ Human-facing manuals live in `docs/skills/`. License and attribution files remai
 | [`academic-writing`](skills/academic-writing/) | Audit and rewrite academic prose without inventing evidence |
 | [`article-to-html`](skills/article-to-html/) | Render a safe self-contained article with xju-notion or paper-proposal styling |
 | [`article-to-latex`](skills/article-to-latex/) | Create, compile, debug, and convert LaTeX/PDF documents |
+| [`deploy-xray-reality`](skills/deploy-xray-reality/) | Deploy an Xray VLESS + Vision + REALITY node and emit a v2rayN link |
 | [`humanizer-zh`](skills/humanizer-zh/) | Make Chinese writing natural and less formulaic |
 | [`idea-scan`](skills/idea-scan/) | Map evidence-backed research gaps and opportunity signals |
 | [`idea-generate`](skills/idea-generate/) | Generate testable candidates from scans and user hints |
@@ -91,6 +92,7 @@ Per-Skill manuals are under [`docs/skills/`](docs/skills/). Notable provenance:
 - `academic-rebuttal` is vendored from [TobiasLee/Rebuttal-Skill](https://github.com/TobiasLee/Rebuttal-Skill) at a fixed commit. Upstream declared no license; see [ATTRIBUTION.md](skills/academic-rebuttal/ATTRIBUTION.md) before redistribution or modification.
 - `article-to-html` provides a dependency-free safety/accessibility validator, two light-only style profiles, XJU MIT attribution, and a four-icon Lucide ISC subset; see [ATTRIBUTION.md](skills/article-to-html/ATTRIBUTION.md) and its [manual](docs/skills/article-to-html.md).
 - `article-to-latex` is a vendored, modified MIT Skill; see [ATTRIBUTION.md](skills/article-to-latex/ATTRIBUTION.md).
+- `deploy-xray-reality` is original; its four-script pipeline and the verification it does *not* cover are documented in [docs/skills/deploy-xray-reality.md](docs/skills/deploy-xray-reality.md).
 - `humanizer-zh` keeps its upstream [LICENSE](skills/humanizer-zh/LICENSE).
 - `xju-docx` is synchronized from the local working copy and includes OOXML repair diagnostics. Its upstream canonical project remains [XjuSelab/xju-feiyue](https://github.com/XjuSelab/xju-feiyue).
 - `zotero-paper-translator` usage and lookup behavior are documented in [docs/skills/zotero-paper-translator.md](docs/skills/zotero-paper-translator.md).

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xray REALITY 节点部署"
+  short_description: "部署 Xray VLESS REALITY 节点并输出 v2rayN 链接"
+  default_prompt: "使用 $deploy-xray-reality 在这台 VPS 上部署 VLESS + XTLS-Vision + REALITY 节点，实测通过后给我可导入 v2rayN 的分享链接。"
