@@ -1,5 +1,7 @@
 # tmux-ssh-remote runtime state (never commit real ssh cmds/hosts)
 skills/tmux-ssh-remote/scripts/.sessions/
+# Release archives built by scripts/package_skills.py
+dist/
 # Python/runtime artifacts from bundled helper scripts
 __pycache__/
 *.py[cod]

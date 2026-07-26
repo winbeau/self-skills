@@ -65,6 +65,28 @@ Default destinations:
 
 `bin/*` is linked to `~/bin`. The `notify-win` CLI is linked from `skills/notify-win/scripts/notify-win` to `~/bin/notify-win`.
 
+## Release archives for chat import
+
+Claude chat (and the Skills settings page) imports a Skill as a `.zip` whose single top-level folder holds `SKILL.md`. Build those archives locally:
+
+```bash
+python3 scripts/package_skills.py                     # dist/<skill>.zip for every Skill
+python3 scripts/package_skills.py --skill notify-win  # one Skill only
+python3 scripts/package_skills.py --bundle self-skills-all \
+  --version v1.0.0 --notes dist/RELEASE_NOTES.md      # what CI runs
+```
+
+The packager validates layout first, skips dotfiles and runtime artifacts, keeps the executable bit on `scripts/*`, and pins entry timestamps so archives are byte-reproducible. Output includes `SHA256SUMS.txt`; `dist/` is git-ignored.
+
+The [`release-skills`](.github/workflows/release-skills.yml) workflow builds the same archives on every push and pull request and uploads them as a build artifact. Publishing a GitHub Release with the zips attached happens when either:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0   # tag push
+gh workflow run release-skills.yml -f tag=v1.0.0   # manual dispatch, creates the tag at HEAD
+```
+
+Re-running an existing tag re-uploads the assets with `--clobber` instead of failing.
+
 ## Validate
 
 Run the repository-level structural validator:

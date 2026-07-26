@@ -27,6 +27,8 @@ After Claude deployment, remind the user that terminal scroll settings require r
 - `skills/` contains canonical Skill directories.
 - `docs/skills/` contains human-facing manuals, not agent instructions.
 - `scripts/validate_skills.py` validates the repository structure.
+- `scripts/package_skills.py` builds chat-importable `dist/<skill>.zip` archives.
+- `.github/workflows/release-skills.yml` packages the same archives in CI and attaches them to a GitHub Release on a `v*` tag or a manual dispatch with a `tag` input.
 - `bin/` contains standalone CLI tools linked to `~/bin`.
 - `global/CLAUDE.md` is the canonical user-level Claude prompt.
 - `deploy.sh` performs installation through symlinks.
