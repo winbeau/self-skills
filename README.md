@@ -24,6 +24,7 @@ Human-facing manuals live in `docs/skills/`. License and attribution files remai
 | [`article-to-latex`](skills/article-to-latex/) | Create, compile, debug, and convert LaTeX/PDF documents |
 | [`deploy-xray-reality`](skills/deploy-xray-reality/) | Deploy an Xray VLESS + Vision + REALITY node and emit a v2rayN link |
 | [`humanizer-zh`](skills/humanizer-zh/) | Make Chinese writing natural and less formulaic |
+| [`i-have-adhd`](skills/i-have-adhd/) | Reshape output for an ADHD reader: action first, numbered steps, no filler |
 | [`idea-scan`](skills/idea-scan/) | Map evidence-backed research gaps and opportunity signals |
 | [`idea-generate`](skills/idea-generate/) | Generate testable candidates from scans and user hints |
 | [`idea-check-novelty`](skills/idea-check-novelty/) | Check candidates against current online prior art |
@@ -117,6 +118,7 @@ Per-Skill manuals are under [`docs/skills/`](docs/skills/). Notable provenance:
 - `article-to-latex` is a vendored, modified MIT Skill; see [ATTRIBUTION.md](skills/article-to-latex/ATTRIBUTION.md).
 - `deploy-xray-reality` is original; its four-script pipeline and the verification it does *not* cover are documented in [docs/skills/deploy-xray-reality.md](docs/skills/deploy-xray-reality.md).
 - `humanizer-zh` keeps its upstream [LICENSE](skills/humanizer-zh/LICENSE).
+- `i-have-adhd` is vendored from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd), MIT, © 2026 Ayoub Ghriss. Upstream [LICENSE](skills/i-have-adhd/LICENSE) is preserved verbatim; the frontmatter reduction (including the dropped `disable-model-invocation` flag) and the omitted always-on hook are recorded in [ATTRIBUTION.md](skills/i-have-adhd/ATTRIBUTION.md) and its [manual](docs/skills/i-have-adhd.md).
 - `xju-docx` is synchronized from the local working copy and includes OOXML repair diagnostics. Its upstream canonical project remains [XjuSelab/xju-feiyue](https://github.com/XjuSelab/xju-feiyue).
 - `zotero-paper-translator` usage and lookup behavior are documented in [docs/skills/zotero-paper-translator.md](docs/skills/zotero-paper-translator.md).
 
